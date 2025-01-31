@@ -1,5 +1,7 @@
 # COMP-2522-202510-Term-Project-ZH
 
+This is a COMP 2522 term project making a game with Java.
+
 ## Authors
 
 **Min Ji Kim (Heather)**
