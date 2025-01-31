@@ -1,5 +1,20 @@
 # COMP-2522-202510-Term-Project-ZH
 
+## Authors
+
+**Min Ji Kim (Heather)**
+- StudentID: A01063140
+- GitHub name: hmjkim
+
+**Min Seo Lee (Zoey)**
+- StudentID: A01405148
+- GitHub name: ZoeyLee66
+
+## Setup Requirements
+
+- Java v8
+- libGDX v1.13.1
+
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
 
 This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
