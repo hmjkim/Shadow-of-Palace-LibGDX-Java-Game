@@ -23,7 +23,7 @@ public class GameScreen implements Screen {
     // Reference to the main game to access its SpriteBatch.
     private final MainGame game;
     // The player object.
-    private Player player;
+    private final Player player;
 
     public GameScreen(MainGame mainGame) {
         this.game = mainGame;
@@ -53,6 +53,9 @@ public class GameScreen implements Screen {
         camera.update();
         mapRenderer.setView(camera);
         mapRenderer.render();
+
+        // Update player's position
+        player.update(delta);
 
         // Draw the player image.
         // Begin the SpriteBatch, draw the player, then end the batch.
