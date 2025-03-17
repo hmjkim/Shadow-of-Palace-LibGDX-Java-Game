@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.math.Vector2;
 
 public class GameScreen implements Screen {
     // Contains the Tiled map data.
@@ -19,8 +20,13 @@ public class GameScreen implements Screen {
     private final OrthographicCamera camera;
     // Adjusts the camera's view to fit various screen sizes.
     private final Viewport viewport;
+    // Reference to the main game to access its SpriteBatch.
+    private final MainGame game;
+    // The player object.
+    private Player player;
 
     public GameScreen(MainGame mainGame) {
+        this.game = mainGame;
         // Load the TMX map from the assets folder.
         map = new TmxMapLoader().load("game_map.tmx");
         // Create a renderer for the loaded map.
@@ -31,22 +37,28 @@ public class GameScreen implements Screen {
         viewport = new FitViewport(800, 600, camera);
         // Set the camera to an orthographic projection with the specified viewport dimensions.
         camera.setToOrtho(false, 800, 600);
+
+        // Initialize the player at a default position (for example, at x=100, y=100).
+        // Make sure you have a "player.png" in your assets folder or adjust accordingly.
+        player = new Player(new Vector2(100, 100));
     }
 
     @Override
     public void render(float delta) {
         // Clear the screen with an opaque black color.
-        // The parameters (0, 0, 0, 1) represent the red, green, blue, and alpha values respectively.
         Gdx.gl.glClearColor(0, 0, 0, 1);
-        // Clears the screen before rendering the next frame.
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Update the camera's settings and position.
+        // Update the camera and set the renderer's view.
         camera.update();
-        // Set the renderer's view to match the current camera view.
         mapRenderer.setView(camera);
-        // Render the tiled map.
         mapRenderer.render();
+
+        // Draw the player image.
+        // Begin the SpriteBatch, draw the player, then end the batch.
+        game.batch.begin();
+        player.draw(game.batch);
+        game.batch.end();
     }
 
     @Override
@@ -76,5 +88,7 @@ public class GameScreen implements Screen {
         // Dispose of the map and renderer to free up resources and prevent memory leaks.
         map.dispose();
         mapRenderer.dispose();
+        // Dispose the player's texture.
+        player.dispose();
     }
 }

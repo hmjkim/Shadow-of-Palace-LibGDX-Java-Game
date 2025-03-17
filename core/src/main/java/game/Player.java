@@ -32,10 +32,10 @@ public class Player {
         batch.draw(texture, position.x, position.y);
     }
 
-//    /**
-//     * Disposes the player's texture resource.
-//     */
-//    public void dispose() {
-//        this.texture.dispose();
-//    }
+    /**
+     * Disposes the player's texture resource.
+     */
+    public void dispose() {
+        this.texture.dispose();
+    }
 }
