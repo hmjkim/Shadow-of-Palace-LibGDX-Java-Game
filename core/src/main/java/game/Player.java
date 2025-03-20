@@ -27,7 +27,7 @@ public class Player {
      */
     public Player(Vector2 position) {
         this.position = position;
-        this.texture = new Texture("player.png"); // put player image path like "player.png"
+        this.texture = new Texture("player/player.png"); // put player image path like "player.png"
     }
 
     /**
