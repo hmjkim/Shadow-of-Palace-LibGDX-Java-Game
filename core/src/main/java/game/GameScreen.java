@@ -28,19 +28,19 @@ public class GameScreen implements Screen {
     public GameScreen(MainGame mainGame) {
         this.game = mainGame;
         // Load the TMX map from the assets folder.
-        map = new TmxMapLoader().load("game_map.tmx");
+        map = new TmxMapLoader().load("map.tmx");
         // Create a renderer for the loaded map.
         mapRenderer = new OrthogonalTiledMapRenderer(map);
 
         // Set up the camera and viewport with a virtual size of 800x600.
         camera = new OrthographicCamera();
-        viewport = new FitViewport(800, 600, camera);
+        viewport = new FitViewport(700, 500, camera);
         // Set the camera to an orthographic projection with the specified viewport dimensions.
-        camera.setToOrtho(false, 800, 600);
+        camera.setToOrtho(false, 1000, 2000);
 
         // Initialize the player at a default position (for example, at x=100, y=100).
         // Make sure you have a "player.png" in your assets folder or adjust accordingly.
-        player = new Player(new Vector2(100, 100));
+        player = new Player(new Vector2(0, 0));
     }
 
     @Override
