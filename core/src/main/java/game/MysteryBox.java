@@ -1,5 +1,6 @@
 package game;
 
+import Sprites.PlayerInventory;
 import com.badlogic.gdx.math.MathUtils;
 
 public class MysteryBox {

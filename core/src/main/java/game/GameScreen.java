@@ -36,15 +36,17 @@ public class GameScreen implements Screen {
     // Player object that contains its own Box2D dynamic body and image.
     private final Player player;
 
+    private OrthographicCamera uiCamera;
+
     // Box2D world and debug renderer for physics simulation.
     private World world;
     private Box2DDebugRenderer debugRenderer;
 
-    public GameScreen(MainGame game) {
-        this.game = game;
-
         // --- Tiled Map Setup ---
         // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
+    public GameScreen(MainGame mainGame) {
+        this.game = mainGame;
+        // Load the TMX map from the "assets" folder.
         map = new TmxMapLoader().load("map.tmx");
         // Create the map renderer with a scale so that 1 meter = PIXELS_PER_METER pixels.
         mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / MainGame.PIXELS_PER_METER);
@@ -61,6 +63,10 @@ public class GameScreen implements Screen {
         );
         viewport.apply();
         camera.update();
+
+        uiCamera = new OrthographicCamera();
+        uiCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        uiCamera.update();
 
         // --- Box2D World Setup ---
         // Create the Box2D world with zero gravity (suitable for a top-down view).
@@ -153,17 +159,26 @@ public class GameScreen implements Screen {
         // Clear the screen.
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.update();
 
         // Render the Tiled map.
+        mapRenderer.setView(camera);
         mapRenderer.render();
-        // Optionally, render the Box2D debug lines (comment out if not needed).
-        debugRenderer.render(world, camera.combined);
 
-        // Set the SpriteBatch's projection matrix to the camera's combined matrix.
+        player.update(delta);
         game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        player.draw(game.batch);
+        game.batch.end();
+        // Optionally, render the Box2D debug lines (comment out if not needed).
+
+        uiCamera.update();
+        // Set the SpriteBatch's projection matrix to the camera's combined matrix.
+        game.batch.setProjectionMatrix(uiCamera.combined);
         game.batch.begin();
         // Draw the player sprite.
         player.draw(game.batch);
+        game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.batch.end();
     }
 
@@ -171,6 +186,8 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         // Update the viewport when the window size changes.
         viewport.update(width, height);
+        uiCamera.setToOrtho(false, width, height);
+        uiCamera.update();
     }
 
     @Override public void show() { }
