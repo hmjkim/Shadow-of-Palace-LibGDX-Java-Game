@@ -3,11 +3,20 @@ package game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+/**
+ * MainGame sets up the global SpriteBatch and game constants.
+ */
 public class MainGame extends Game {
     /**
      * Batch for drawing images.
      */
     public SpriteBatch batch;
+
+    // Conversion constant: How many pixels equal one Box2D world unit.
+    public static final float PIXELS_PER_METER = 100f;
+    // Desired viewport dimensions in pixels (this zooms the camera to a 700×500 pixel area).
+    public static final int VIEWPORT_WIDTH = 700;
+    public static final int VIEWPORT_HEIGHT = 500;
 
     /**
      * Creates a new MainGame object.
@@ -20,7 +29,8 @@ public class MainGame extends Game {
      */
     @Override
     public void create() {
-        this.batch = new SpriteBatch();
+        batch = new SpriteBatch();
+        // Set the initial screen (GameScreen uses Box2D, Tiled map, etc.)
         setScreen(new GameScreen(this));
     }
 
@@ -37,11 +47,11 @@ public class MainGame extends Game {
      */
     @Override
     public void dispose() {
-        if (this.batch != null) {
-            this.batch.dispose();
-        }
-        if (getScreen() != null) {
+        if (batch != null)
+            batch.dispose();
+        if (getScreen() != null)
             getScreen().dispose();
-        }
     }
 }
+
+
