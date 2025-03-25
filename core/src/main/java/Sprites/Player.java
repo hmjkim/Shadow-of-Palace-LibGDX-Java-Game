@@ -3,8 +3,10 @@ package Sprites;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import game.GameScreen;
 import game.MainGame;
 
 /**
@@ -15,26 +17,31 @@ import game.MainGame;
 public class Player extends Sprite {
     private World world;
     private Body body;
-    private final Texture texture;
+    // private final Texture texture;
+    private TextureRegion playerStand;
 
     /**
      * Constructs the player, loads the image, and creates its Box2D body.
      *
      * @param world The Box2D world to which the player's body is added.
      */
-    public Player(World world) {
+    public Player(World world, GameScreen screen) {
+        super(screen.getAtlas().findRegion("gwi_in"));
         this.world = world;
         // --- Load Player Image ---
         // Load the player's texture. Ensure "player.png" is in your assets folder.
-        texture = new Texture("player.png");
+        // texture = new Texture("player.png");
         // Set the texture as the sprite region.
-        setRegion(texture);
+        // setRegion(texture);
         // Set sprite size based on conversion from pixels to Box2D world units.
-        setSize(texture.getWidth() / MainGame.PIXELS_PER_METER, texture.getHeight() / MainGame.PIXELS_PER_METER);
+        // setSize(texture.getWidth() / MainGame.PIXELS_PER_METER, texture.getHeight() / MainGame.PIXELS_PER_METER);
         // Set the origin for rotations and scaling.
         setOriginCenter();
         // --- Create the Player's Physics Body ---
         definePlayer();
+        playerStand = new TextureRegion(getTexture(), 25, 67, 16, 24);
+        setBounds(25, 67, 16/ MainGame.PIXELS_PER_METER, 24 / MainGame.PIXELS_PER_METER);
+        setRegion(playerStand);
     }
 
     /**
@@ -51,7 +58,7 @@ public class Player extends Sprite {
         // --- Define Collision Shape ---
         // Create a circular shape for the player's collision.
         CircleShape shape = new CircleShape();
-        shape.setRadius(10 / MainGame.PIXELS_PER_METER);
+        shape.setRadius(15 / MainGame.PIXELS_PER_METER);
 
         // Create a fixture definition with density and friction.
         FixtureDef fdef = new FixtureDef();
@@ -95,10 +102,10 @@ public class Player extends Sprite {
         super.draw(batch);
     }
 
-    /**
-     * Dispose of the player's texture.
-     */
-    public void dispose() {
-        texture.dispose();
-    }
+//    /**
+//     * Dispose of the player's texture.
+//     */
+//    public void dispose() {
+//        texture.dispose();
+//    }
 }

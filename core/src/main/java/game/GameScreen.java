@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -33,6 +34,8 @@ public class GameScreen implements Screen {
     // Reference to the main game to access its SpriteBatch.
     private final MainGame game;
 
+    private TextureAtlas atlas;
+
     // Player object that contains its own Box2D dynamic body and image.
     private final Player player;
 
@@ -41,10 +44,13 @@ public class GameScreen implements Screen {
     // Box2D world and debug renderer for physics simulation.
     private World world;
     private Box2DDebugRenderer debugRenderer;
+    private GameScreen screen;
 
         // --- Tiled Map Setup ---
         // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
+        atlas = new TextureAtlas("spritesheet/concubines.atlas");
+
         this.game = mainGame;
         // Load the TMX map from the "assets" folder.
         map = new TmxMapLoader().load("map.tmx");
@@ -103,7 +109,7 @@ public class GameScreen implements Screen {
 
         // --- Player Setup ---
         // Create the player, passing the Box2D world so the player can create its dynamic body.
-        player = new Player(world);
+        player = new Player(world, this);
     }
 
     /**
@@ -122,6 +128,10 @@ public class GameScreen implements Screen {
         camera.update();
         // Inform the map renderer of the camera's updated view.
         mapRenderer.setView(camera);
+    }
+
+    public TextureAtlas getAtlas() {
+        return atlas;
     }
 
     /**
@@ -202,6 +212,6 @@ public class GameScreen implements Screen {
         mapRenderer.dispose();
         world.dispose();
         debugRenderer.dispose();
-        player.dispose();
+//        player.dispose();
     }
 }
