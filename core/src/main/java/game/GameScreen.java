@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -62,7 +63,12 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         // Set up a viewport with the desired size in world units.
         // Convert the desired viewport dimensions (in pixels) to world units.
-        viewport = new FitViewport(
+//        viewport = new FitViewport(
+//            MainGame.VIEWPORT_WIDTH / MainGame.PIXELS_PER_METER,
+//            MainGame.VIEWPORT_HEIGHT / MainGame.PIXELS_PER_METER,
+//            camera
+//        );
+        viewport = new ExtendViewport(
             MainGame.VIEWPORT_WIDTH / MainGame.PIXELS_PER_METER,
             MainGame.VIEWPORT_HEIGHT / MainGame.PIXELS_PER_METER,
             camera
@@ -115,20 +121,50 @@ public class GameScreen implements Screen {
     /**
      * Update game logic: handle input, step physics simulation, update player, and move camera.
      */
+//    public void update(float delta) {
+//        handleInput(delta);
+//        // Step the Box2D world simulation (fixed time step recommended).
+//        world.step(1/60f, 6, 2);
+//        // Update the player's sprite position based on its physics body.
+//        player.update(delta);
+//
+//        // --- Camera Follow ---
+//        // Update the camera's position to follow the player's Box2D body.
+//        camera.position.set(player.getBody().getPosition(), 0);
+//        camera.update();
+//        // Inform the map renderer of the camera's updated view.
+//        mapRenderer.setView(camera);
+//    }
     public void update(float delta) {
         handleInput(delta);
-        // Step the Box2D world simulation (fixed time step recommended).
         world.step(1/60f, 6, 2);
-        // Update the player's sprite position based on its physics body.
         player.update(delta);
 
-        // --- Camera Follow ---
-        // Update the camera's position to follow the player's Box2D body.
+        // Get the player's Box2D position and try to center the camera on it
         camera.position.set(player.getBody().getPosition(), 0);
+
+        // --- Clamp the camera position ---
+        // Calculate half viewport dimensions (in world units)
+        float halfViewportWidth = camera.viewportWidth * 0.5f;
+        float halfViewportHeight = camera.viewportHeight * 0.5f;
+
+        // Retrieve map dimensions from properties
+        int mapWidthInTiles = map.getProperties().get("width", Integer.class);
+        int mapHeightInTiles = map.getProperties().get("height", Integer.class);
+        int tilePixelWidth = map.getProperties().get("tilewidth", Integer.class);
+        int tilePixelHeight = map.getProperties().get("tileheight", Integer.class);
+        float mapWidth = (mapWidthInTiles * tilePixelWidth) / MainGame.PIXELS_PER_METER;
+        float mapHeight = (mapHeightInTiles * tilePixelHeight) / MainGame.PIXELS_PER_METER;
+
+        // Clamp the camera's x and y values
+        float camX = Math.max(halfViewportWidth, Math.min(camera.position.x, mapWidth - halfViewportWidth));
+        float camY = Math.max(halfViewportHeight, Math.min(camera.position.y, mapHeight - halfViewportHeight));
+        camera.position.set(camX, camY, 0);
+
         camera.update();
-        // Inform the map renderer of the camera's updated view.
         mapRenderer.setView(camera);
     }
+
 
     public TextureAtlas getAtlas() {
         return atlas;
