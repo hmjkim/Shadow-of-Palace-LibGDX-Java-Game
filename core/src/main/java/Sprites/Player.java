@@ -185,6 +185,10 @@ public class Player extends Sprite {
         return region;
     }
 
+    public void setDirection(Direction dir) {
+        this.direction = dir;
+    }
+
 
     public State getState() {
         //if player is positive or negative in the X axis, she is walking

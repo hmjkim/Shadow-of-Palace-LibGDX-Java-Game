@@ -182,15 +182,19 @@ public class GameScreen implements Screen {
 
         // Check which keys are held down and adjust the velocity accordingly.
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            player.setDirection(Direction.EAST);
             velocity.x = moveSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            player.setDirection(Direction.WEST);
             velocity.x = -moveSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            player.setDirection(Direction.NORTH);
             velocity.y = moveSpeed;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            player.setDirection(Direction.SOUTH);
             velocity.y = -moveSpeed;
         }
         // Set the player's velocity every frame.
