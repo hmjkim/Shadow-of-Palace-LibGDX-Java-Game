@@ -17,6 +17,12 @@ import com.badlogic.gdx.utils.Array;
  * loads the player image, and updates its sprite position accordingly.
  */
 public class Player extends Sprite {
+    // Constants for your sprite sheet grid.
+    private static final int CELL_WIDTH = 16 + 8;    // 24 pixels per cell in width
+    private static final int CELL_HEIGHT = 24 + 8;   // 32 pixels per cell in height
+    private static final int FRAME_WIDTH = 16;       // Actual graphic width
+    private static final int FRAME_HEIGHT = 24;      // Actual graphic height
+
     private State currentState;
     private State previousState;
     private World world;
@@ -25,9 +31,12 @@ public class Player extends Sprite {
     // private final Texture texture;
     // Animation
     private TextureRegion playerStand;
-    private Animation  playerWalk;
+    private Animation<TextureRegion> walkUp;
+    private Animation<TextureRegion> walkRight;
+    private Animation<TextureRegion> walkDown;
     private float stateTimer;
-    private char direction;
+    private Direction direction;
+
 
     /**
      * Constructs the player, loads the image, and creates its Box2D body.
@@ -40,7 +49,7 @@ public class Player extends Sprite {
         currentState = State.STANDING;
         previousState = State.STANDING;
         stateTimer = 0;
-        direction = 'E';
+        direction = Direction.SOUTH;
         // --- Load Player Image ---
         // Load the player's texture. Ensure "player.png" is in your assets folder.
         // texture = new Texture("player.png");
@@ -53,44 +62,42 @@ public class Player extends Sprite {
         // --- Create the Player's Physics Body ---
         definePlayer();
 
-        // --- Sprite Sheet Parameters ---
-        // These parameters define the dimensions and gaps for your frames.
-        int frameWidth = 16;    // Each frame is 16 pixels wide.
-        int frameHeight = 24;   // Each frame is 24 pixels tall.
-        int gapX = 8;           // 8 pixel gap horizontally between frames.
-        int gapY = 8;           // 8 pixel gap vertically between frames (if applicable).
-        int startX = 0;         // X offset for the first frame.
-        int startY = 0;        // Y offset for the first frame.
-
-
-        // --- Extract Walking Animation Frames ---
-        Array<TextureRegion> frames = new Array<TextureRegion>();
-        // Assuming you have 3 walking frames.
-        for (int i = 0; i < 3; i++) {
-            // Calculate x offset: startX + i * (frameWidth + gapX)
-            int frameX = startX + i * (frameWidth + gapX);
-            frames.add(new TextureRegion(getTexture(), frameX, frameHeight + gapY, frameWidth, frameHeight));
+        Array<TextureRegion> framesUp = new Array<TextureRegion>();
+        for (int col = 0; col < 3; col++) {
+            framesUp.add(getSpriteFrame(0, col));  // row 0 for up
         }
-        playerWalk = new Animation(0.1f, frames);
-        frames.clear();
+        walkUp = new Animation<>(0.1f, framesUp, Animation.PlayMode.LOOP);
 
-        // --- Define Standing Frame ---
-        playerStand = new TextureRegion(getTexture(), frameWidth + gapX, (frameHeight + gapY) * 2, frameWidth, frameHeight);
+        Array<TextureRegion> framesRight = new Array<TextureRegion>();
+        for (int col = 0; col < 3; col++) {
+            framesRight.add(getSpriteFrame(1, col));  // row 1 for right
+        }
+        walkRight = new Animation<>(0.1f, framesRight, Animation.PlayMode.LOOP);
+
+        Array<TextureRegion> framesDown = new Array<TextureRegion>();
+        for (int col = 0; col < 3; col++) {
+            framesDown.add(getSpriteFrame(2, col));  // row 2 for down
+        }
+        walkDown = new Animation<>(0.1f, framesDown, Animation.PlayMode.LOOP);
+        // Use the second frame of the down row (row 2, col 1) as the standing frame.
+        playerStand = getSpriteFrame(2, 1);
 
         // --- Set Sprite Bounds ---
-        setBounds(frameWidth + gapX, (frameHeight + gapY) * 2, frameWidth / MainGame.PIXELS_PER_METER, frameHeight / MainGame.PIXELS_PER_METER);
+        setBounds(CELL_WIDTH, (CELL_HEIGHT) * 2, FRAME_WIDTH / MainGame.PIXELS_PER_METER, FRAME_HEIGHT / MainGame.PIXELS_PER_METER);
         setRegion(playerStand);
-
-//        Array<TextureRegion> frames = new Array<TextureRegion>();
-//        for (int i = 0; i < 3; i++) {
-//            frames.add(new TextureRegion(getTexture(), i * 0, 32, 16, 24));
-//        }
-//        playerWalk = new Animation(0.1f, frames);
-//        frames.clear();
-//        playerStand = new TextureRegion(getTexture(), 24, 64, 17, 24);
-//        setBounds(25, 67, 16/ MainGame.PIXELS_PER_METER, 24 / MainGame.PIXELS_PER_METER);
-//        setRegion(playerStand);
     }
+
+    /**
+     * Returns a TextureRegion for the frame at the given grid position.
+     * Rows and columns are zero-indexed.
+     * For example, row 0 is the first row (player moving up), row 1 is moving right, row 2 is moving down.
+     */
+    private TextureRegion getSpriteFrame(int row, int col) {
+        int x = col * CELL_WIDTH;
+        int y = row * CELL_HEIGHT;
+        return new TextureRegion(getTexture(), x, y, FRAME_WIDTH, FRAME_HEIGHT);
+    }
+
 
     /**
      * Creates the Box2D dynamic body for the player, including collision shape and fixture.
@@ -121,6 +128,7 @@ public class Player extends Sprite {
         // This helps the player slow down when no input is given.
         body.setLinearDamping(3f);
     }
+
 
     /**
      * Updates the sprite's position to follow its Box2D body.
@@ -155,33 +163,39 @@ public class Player extends Sprite {
     }
 
     public TextureRegion getFrame(float delta) {
-        //get player current state. (walking, standing)
+        // Determine current state
         currentState = getState();
-
         TextureRegion region;
-        //depending on the state, get corresponding animation keyFrame.
-        switch(currentState){
-            case WALKING:
-                region = (TextureRegion) playerWalk.getKeyFrame(stateTimer, true);
-                break;
-            case STANDING:
-            default:
-                region = playerStand;
-                break;
-        }
 
-        //if player is running left and the texture isnt facing left... flip it.
-        if((body.getLinearVelocity().x < 0 || direction != 'E') && !region.isFlipX()){
-            region.flip(true, false);
-            direction = 'W';
+        // If standing, always use the idle (down) frame.
+        if (currentState == State.STANDING) {
+            region = playerStand;  // Assume playerStand is the down-facing idle frame.
+        } else {  // Walking state
+            switch(direction) {
+                case NORTH:
+                    region = walkUp.getKeyFrame(stateTimer, true);
+                    break;
+                case EAST:
+                    region = walkRight.getKeyFrame(stateTimer, true);
+                    // If the region is flipped, flip it back for east.
+                    if (region.isFlipX()) {
+                        region.flip(true, false);
+                    }
+                    break;
+                case SOUTH:
+                    region = walkDown.getKeyFrame(stateTimer, true);
+                    break;
+                case WEST:
+                    region = walkRight.getKeyFrame(stateTimer, true);
+                    if (!region.isFlipX()) {
+                        region.flip(true, false);
+                    }
+                    break;
+                default:
+                    region = playerStand;
+                    break;
+            }
         }
-
-        //if player is running right and the texture isnt facing right... flip it.
-        else if((body.getLinearVelocity().x > 0 || direction == 'E') && region.isFlipX()){
-            region.flip(true, false);
-            direction = 'E';
-        }
-        //return our final adjusted frame
         return region;
     }
 
@@ -191,10 +205,10 @@ public class Player extends Sprite {
 
 
     public State getState() {
-        //if player is positive or negative in the X axis, she is walking
-        if(body.getLinearVelocity().x != 0)
+        // Check if the overall speed is above a small threshold
+        if (body.getLinearVelocity().len() > 0.1f)
             return State.WALKING;
-            //if none of these return then she must be standing
+            //if none of these return then player must be standing
         else
             return State.STANDING;
     }

@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import Sprites.Direction;
 
 /**
  * GameScreen sets up the Tiled map, Box2D world, collision objects, player, and camera.
@@ -47,11 +48,11 @@ public class GameScreen implements Screen {
     private Box2DDebugRenderer debugRenderer;
     private GameScreen screen;
 
+
         // --- Tiled Map Setup ---
         // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
         atlas = new TextureAtlas("spritesheet/concubines.atlas");
-
         this.game = mainGame;
         // Load the TMX map from the "assets" folder.
         map = new TmxMapLoader().load("map.tmx");
