@@ -13,14 +13,9 @@ public class PlayerInventory {
     private int invincibilityItemCount;
     private int heartRecoveryItemCount;
 
-    private Texture waterIcon;
-    private Texture leafIcon;
-    private Texture rockIcon;
-    private Texture poisonIcon;
-    private Texture invincibilityIcon;
-    private Texture heartRecoveryIcon;
+    private final Texture playerInventory;
 
-    private BitmapFont font;
+    private final BitmapFont font;
 
     private static PlayerInventory instance;
 
@@ -32,12 +27,7 @@ public class PlayerInventory {
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
 
-        this.waterIcon = new Texture("water.png");
-        this.leafIcon = new Texture("leaf.png");
-        this.rockIcon = new Texture("rock.png");
-        this.poisonIcon = new Texture("poison.png");
-        this.invincibilityIcon = new Texture("invincibility.png");
-        this.heartRecoveryIcon = new Texture("recovery.png");
+        this.playerInventory = new Texture("inventory.jpg");
 
         font = new BitmapFont();
     }
@@ -87,42 +77,19 @@ public class PlayerInventory {
         int iconSize = 32;
         int padding = 10;
 
-        float x = screenWidth - padding - iconSize;
-        float y = screenHeight - padding - iconSize;
+        float x = (screenWidth - playerInventory.getWidth()) / 2f;
+        float y = 20;
 
-        batch.draw(waterIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(waterCount), x - 20, y + iconSize / 2);
-
-        x -= (iconSize + padding);
-        batch.draw(leafIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(leafCount), x - 20, y + iconSize / 2);
-
-        x -= (iconSize + padding);
-        batch.draw(rockIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(rockCount), x - 20, y + iconSize / 2);
-
-        x = screenWidth - padding - iconSize;
-        y -= (iconSize + padding);
-
-        batch.draw(poisonIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(poisonItemCount), x - 20, y + iconSize / 2);
-
-        x -= (iconSize + padding);
-        batch.draw(invincibilityIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(invincibilityItemCount), x - 20, y + iconSize / 2);
-
-        x -= (iconSize + padding);
-        batch.draw(heartRecoveryIcon, x, y, iconSize, iconSize);
-        font.draw(batch, String.valueOf(heartRecoveryItemCount), x - 20, y + iconSize / 2);
+        font.draw(batch, "Water: " + waterCount, x + 20, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Leaf: " + leafCount, x + 140, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Rock: " + rockCount, x + 260, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Poison: " + poisonItemCount, x + 380, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Invincibility: " + invincibilityItemCount, x + 520, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 700, y + playerInventory.getHeight() - 10);
     }
 
     public void dispose() {
-        waterIcon.dispose();
-        leafIcon.dispose();
-        rockIcon.dispose();
-        poisonIcon.dispose();
-        invincibilityIcon.dispose();
-        heartRecoveryIcon.dispose();
+        playerInventory.dispose();
         font.dispose();
     }
 }
