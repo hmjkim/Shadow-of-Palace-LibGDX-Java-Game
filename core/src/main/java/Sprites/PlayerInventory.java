@@ -4,6 +4,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+/**
+ * Manages the player's inventory including ingredients and items.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class PlayerInventory {
     private int waterCount;
     private int leafCount;
@@ -79,6 +85,8 @@ public class PlayerInventory {
 
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
         float y = 20;
+
+        batch.draw(playerInventory, x, y);
 
         font.draw(batch, "Water: " + waterCount, x + 20, y + playerInventory.getHeight() - 10);
         font.draw(batch, "Leaf: " + leafCount, x + 140, y + playerInventory.getHeight() - 10);
