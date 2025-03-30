@@ -36,6 +36,7 @@ public class PlayerInventory {
         this.playerInventory = new Texture("inventory.jpg");
 
         font = new BitmapFont();
+        font.getData().setScale(0.84f);
     }
 
     public static PlayerInventory getInstance() {
@@ -88,12 +89,12 @@ public class PlayerInventory {
 
         batch.draw(playerInventory, x, y);
 
-        font.draw(batch, "Water: " + waterCount, x + 20, y + playerInventory.getHeight() - 10);
-        font.draw(batch, "Leaf: " + leafCount, x + 140, y + playerInventory.getHeight() - 10);
-        font.draw(batch, "Rock: " + rockCount, x + 260, y + playerInventory.getHeight() - 10);
-        font.draw(batch, "Poison: " + poisonItemCount, x + 380, y + playerInventory.getHeight() - 10);
-        font.draw(batch, "Invincibility: " + invincibilityItemCount, x + 520, y + playerInventory.getHeight() - 10);
-        font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 700, y + playerInventory.getHeight() - 10);
+        font.draw(batch, "Water: " + waterCount, x + 25, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Leaf: " + leafCount, x + 130, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Rock: " + rockCount, x + 225, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Poison: " + poisonItemCount, x + 318, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Hide: " + invincibilityItemCount, x + 423, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 516, y + playerInventory.getHeight() - 70);
     }
 
     public void dispose() {
