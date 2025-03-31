@@ -92,6 +92,7 @@ public class PlayerInventory {
         font.draw(batch, "Poison: " + poisonItemCount, x + 318, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Hide: " + invincibilityItemCount, x + 423, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 516, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Box: " + heartRecoveryItemCount, x + 620, y + playerInventory.getHeight() - 70);
     }
 
     public void dispose() {
