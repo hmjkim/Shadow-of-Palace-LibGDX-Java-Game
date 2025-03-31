@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class PlayerHealth{
+public class PlayerHealth {
     private static final int MAXHEARTS = 5;
     private float currentHearts;
     private final Texture fullHeart;
@@ -30,6 +30,7 @@ public class PlayerHealth{
 
     public void takeDamage(float damage) {
         this.currentHearts -= damage;
+        System.out.println("damage: " + this.currentHearts);
         if (this.currentHearts <= 0) {
             this.currentHearts = 0;
         }

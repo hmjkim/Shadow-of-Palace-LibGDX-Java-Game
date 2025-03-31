@@ -12,10 +12,10 @@ public class Enemy extends Sprite {
     private GameScreen screen;
 
     private float stateTimer;
-    private float chaseInterval = 15f;
+    private static final float CHASEINTERVAL = 15f;
     private boolean isChasing;
     private float chaseTimer;
-    private float chaseDuration = 5f;
+    private static final float CHASEDURATION = 5f;
 
     private Vector2 scatterDirection;
 
@@ -83,7 +83,7 @@ public class Enemy extends Sprite {
     public void update(float delta, Vector2 playerPosition) {
         stateTimer += delta;
 
-        if (!isChasing && stateTimer >= chaseInterval) {
+        if (!isChasing && stateTimer >= CHASEINTERVAL) {
             isChasing = true;
             chaseTimer = 0f;
         }
@@ -97,7 +97,7 @@ public class Enemy extends Sprite {
             } else {
                 body.setLinearVelocity(0, 0);
             }
-            if (chaseTimer >= chaseDuration) {
+            if (chaseTimer >= CHASEDURATION) {
                 isChasing = false;
                 stateTimer = 0f;
                 scatterDirection = getRandomDirection();

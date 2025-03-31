@@ -57,6 +57,7 @@ public class GameScreen implements Screen {
 
     private int stage;
     private final List<Enemy> npcList;
+    private List<Enemy> enemyRemovalQueue;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -95,7 +96,7 @@ public class GameScreen implements Screen {
         world = new World(new Vector2(0, 0), true);
         // Initialize the debug renderer (optional – remove or comment out in production).
         debugRenderer = new Box2DDebugRenderer();
-        world.setContactListener(new CollisionListener());
+        world.setContactListener(new CollisionListener(this));
 
         // --- Collision Object Setup ---
         // Parse collision objects from an object layer named "Obstacles" (or "Collision") in the Tiled map.
@@ -134,7 +135,14 @@ public class GameScreen implements Screen {
         this.stage = 1;
 
         npcList = new ArrayList<>();
+        enemyRemovalQueue = new ArrayList<>();
         spawnNPCs();
+    }
+
+    public void scheduleEnemyRemoval(Enemy enemy) {
+        if (!enemyRemovalQueue.contains(enemy)) {
+            enemyRemovalQueue.add(enemy);
+        }
     }
 
     private int getNPCCount(int stage) {
@@ -197,6 +205,13 @@ public class GameScreen implements Screen {
     public void update(float delta) {
         handleInput(delta);
         world.step(1/60f, 6, 2);
+        if (!enemyRemovalQueue.isEmpty()) {
+            for (Enemy enemy : enemyRemovalQueue) {
+                // enemy.onPlayerCollision() 내부에서 world.destroyBody(body) 및 재생성을 수행합니다.
+                enemy.onPlayerCollision();
+            }
+            enemyRemovalQueue.clear();
+        }
         player.update(delta);
 
         Vector2 playerPos = player.getBody().getPosition();

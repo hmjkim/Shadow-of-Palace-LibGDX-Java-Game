@@ -122,7 +122,8 @@ public class Player extends Sprite {
         fdef.shape = shape;
         fdef.density = 1f;
         fdef.friction = 0.5f;
-        body.createFixture(fdef);
+        Fixture fixture = body.createFixture(fdef);
+        fixture.setUserData(this);
         // Dispose the shape after use.
         shape.dispose();
 
@@ -232,6 +233,7 @@ public class Player extends Sprite {
 
     public void hitByNPC() {
         float damage = TimeManager.getInstance().getIsDayTime() ? 0.5f : 1.0f;
+        System.out.println("Collision happened");
         PlayerHealth.getInstance().takeDamage(damage);
     }
 

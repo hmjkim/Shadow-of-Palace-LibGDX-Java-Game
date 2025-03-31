@@ -4,20 +4,22 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class CollisionListener implements ContactListener {
+    private GameScreen screen;
+
+    public CollisionListener(GameScreen screen) {
+        this.screen = screen;
+    }
     @Override
     public void beginContact(Contact contact) {
-        Fixture fixA = contact.getFixtureA();
-        Fixture fixB = contact.getFixtureB();
-
-        Object userDataA = fixA.getUserData();
-        Object userDataB = fixB.getUserData();
+        Object userDataA = contact.getFixtureA().getUserData();
+        Object userDataB = contact.getFixtureB().getUserData();
 
         if (userDataA instanceof Sprites.Player && userDataB instanceof Enemy) {
             ((Sprites.Player) userDataA).hitByNPC();
-            ((Enemy) userDataB).onPlayerCollision();
+            screen.scheduleEnemyRemoval((Enemy) userDataB);
         } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
             ((Sprites.Player) userDataB).hitByNPC();
-            ((Enemy) userDataA).onPlayerCollision();
+            screen.scheduleEnemyRemoval((Enemy) userDataA);
         }
     }
 
