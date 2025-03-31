@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
@@ -154,9 +155,8 @@ public class GameScreen implements Screen {
             npcList.clear();
         }
         for (int i = 0; i < count; i++) {
-            String imageFile = "enemy/npc" + (i + 1) + ".png";
-            assert npcList != null; //check later
-            npcList.add(new Enemy(world, this, imageFile));
+            Texture enemy = new Texture("enemy/npc" + (i + 1) + ".png");
+            npcList.add(new Enemy(world, this, enemy));
         }
     }
 
@@ -199,6 +199,12 @@ public class GameScreen implements Screen {
         world.step(1/60f, 6, 2);
         player.update(delta);
 
+        Vector2 playerPos = player.getBody().getPosition();
+
+        for (Enemy npc : npcList) {
+            npc.update(delta, playerPos);
+        }
+
         // Get the player's Box2D position and try to center the camera on it
         camera.position.set(player.getBody().getPosition(), 0);
 
@@ -225,6 +231,12 @@ public class GameScreen implements Screen {
         TimeManager.getInstance().update(delta);
     }
 
+    public boolean isPositionValid(float x, float y) {
+        if (x < 0 || y < 0 || x > getMapWidth() || y > getMapHeight()) {
+            return false;//check later
+        }
+        return true;
+    }
 
     public TextureAtlas getAtlas() {
         return atlas;
