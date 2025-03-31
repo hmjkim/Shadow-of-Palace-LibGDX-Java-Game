@@ -241,8 +241,8 @@ public class GameScreen implements Screen {
         game.batch.begin();
         // Draw the player sprite.
         player.draw(game.batch);
-        game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        game.health.drawHearts(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth());
+        game.health.drawHearts(game.batch, Gdx.graphics.getHeight());
         game.batch.end();
 
         if (!TimeManager.getInstance().getIsDayTime()) {
@@ -265,10 +265,20 @@ public class GameScreen implements Screen {
         uiCamera.update();
     }
 
-    @Override public void show() { }
-    @Override public void hide() { }
-    @Override public void pause() { }
-    @Override public void resume() { }
+    @Override
+    public void show() {
+    }
+
+    @Override public void hide() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
 
     @Override
     public void dispose() {

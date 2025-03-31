@@ -80,7 +80,7 @@ public class PlayerInventory {
         this.rockCount -= rockReq;
     }
 
-    public void drawInventory(SpriteBatch batch, int screenWidth, int screenHeight) {
+    public void drawInventory(SpriteBatch batch, int screenWidth) {
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
         float y = 20;
 

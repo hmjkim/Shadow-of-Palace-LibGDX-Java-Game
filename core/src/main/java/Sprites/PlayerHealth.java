@@ -44,7 +44,7 @@ public class PlayerHealth{
             currentHearts = MAXHEARTS;
     }
 
-    public void drawHearts(SpriteBatch batch, int screenWidth, int screenHeight) {
+    public void drawHearts(SpriteBatch batch, int screenHeight) {
         int padding = 5;
         float heartWidth = fullHeart.getWidth();
         float heartHeight = fullHeart.getHeight();
