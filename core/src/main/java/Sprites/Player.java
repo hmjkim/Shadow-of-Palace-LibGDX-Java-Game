@@ -114,7 +114,8 @@ public class Player extends Sprite {
         // --- Define Collision Shape ---
         // Create a circular shape for the player's collision.
         CircleShape shape = new CircleShape();
-        shape.setRadius(15 / MainGame.PIXELS_PER_METER);
+        int shapeRadius = 22;
+        shape.setRadius(shapeRadius / MainGame.PIXELS_PER_METER);
 
         // Create a fixture definition with density and friction.
         FixtureDef fdef = new FixtureDef();
