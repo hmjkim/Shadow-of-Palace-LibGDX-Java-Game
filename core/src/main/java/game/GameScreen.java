@@ -17,12 +17,11 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import Sprites.Direction;
-import Sprites.PlayerHealth;
 
-import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GameScreen sets up the Tiled map, Box2D world, collision objects, player, and camera.
@@ -55,7 +54,8 @@ public class GameScreen implements Screen {
     private TimeManager timeManager;
     private ShapeRenderer shapeRenderer;
 
-    private PlayerHealth health;
+    private int stage;
+    private final List<Enemy> npcList;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -94,6 +94,7 @@ public class GameScreen implements Screen {
         world = new World(new Vector2(0, 0), true);
         // Initialize the debug renderer (optional – remove or comment out in production).
         debugRenderer = new Box2DDebugRenderer();
+        world.setContactListener(new CollisionListener());
 
         // --- Collision Object Setup ---
         // Parse collision objects from an object layer named "Obstacles" (or "Collision") in the Tiled map.
@@ -128,6 +129,52 @@ public class GameScreen implements Screen {
 
         this.timeManager = TimeManager.getInstance();
         this.shapeRenderer = new ShapeRenderer();
+
+        this.stage = 1;
+
+        npcList = new ArrayList<>();
+        spawnNPCs();
+    }
+
+    private int getNPCCount(int stage) {
+        if (stage == 3) {
+            return 4;
+        } else if (stage == 4) {
+            return 5;
+        }
+        return 3;
+    }
+
+    private void spawnNPCs() {
+        int count = getNPCCount(stage);
+        if (npcList != null) {
+            for (Enemy npc : npcList) {
+                world.destroyBody(npc.getBody());
+            }
+            npcList.clear();
+        }
+        for (int i = 0; i < count; i++) {
+            String imageFile = "enemy/npc" + (i + 1) + ".png";
+            assert npcList != null; //check later
+            npcList.add(new Enemy(world, this, imageFile));
+        }
+    }
+
+    public void nextStage() {
+        stage++;
+        spawnNPCs();
+    }
+
+    public float getMapWidth() {
+        int mapWidthInTiles = map.getProperties().get("width", Integer.class);
+        int tilePixelWidth = map.getProperties().get("tilewidth", Integer.class);
+        return (mapWidthInTiles * tilePixelWidth) / MainGame.PIXELS_PER_METER;
+    }
+
+    public float getMapHeight() {
+        int mapHeightInTiles = map.getProperties().get("height", Integer.class);
+        int tilePixelHeight = map.getProperties().get("tileheight", Integer.class);
+        return (mapHeightInTiles * tilePixelHeight) / MainGame.PIXELS_PER_METER;
     }
 
     /**
@@ -232,6 +279,9 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         player.draw(game.batch);
+        for (Enemy npc : npcList) {
+            npc.draw(game.batch);
+        }
         game.batch.end();
         // Optionally, render the Box2D debug lines (comment out if not needed).
 

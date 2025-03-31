@@ -10,6 +10,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import game.GameScreen;
 import game.MainGame;
 import com.badlogic.gdx.utils.Array;
+import game.TimeManager;
 
 /**
  * The Player class represents the player character.
@@ -226,6 +227,11 @@ public class Player extends Sprite {
     public void draw(Batch batch) {
         // Draw the sprite (player image) using the current sprite batch.
         super.draw(batch);
+    }
+
+    public void hitByNPC() {
+        float damage = TimeManager.getInstance().getIsDayTime() ? 0.5f : 1.0f;
+        PlayerHealth.getInstance().takeDamage(damage);
     }
 
 //    /**
