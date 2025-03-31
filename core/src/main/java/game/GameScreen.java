@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -19,6 +20,8 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import Sprites.Direction;
+
+import java.sql.Time;
 
 /**
  * GameScreen sets up the Tiled map, Box2D world, collision objects, player, and camera.
@@ -48,9 +51,11 @@ public class GameScreen implements Screen {
     private Box2DDebugRenderer debugRenderer;
     private GameScreen screen;
 
+    private TimeManager timeManager;
+    private ShapeRenderer shapeRenderer;
 
-        // --- Tiled Map Setup ---
-        // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
+    // --- Tiled Map Setup ---
+    // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
         atlas = new TextureAtlas("spritesheet/concubines.atlas");
         this.game = mainGame;
@@ -117,6 +122,9 @@ public class GameScreen implements Screen {
         // --- Player Setup ---
         // Create the player, passing the Box2D world so the player can create its dynamic body.
         player = new Player(world, this);
+
+        this.timeManager = TimeManager.getInstance();
+        this.shapeRenderer = new ShapeRenderer();
     }
 
     /**
@@ -164,6 +172,7 @@ public class GameScreen implements Screen {
 
         camera.update();
         mapRenderer.setView(camera);
+        TimeManager.getInstance().update(delta);
     }
 
 
@@ -231,6 +240,17 @@ public class GameScreen implements Screen {
         player.draw(game.batch);
         game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.batch.end();
+
+        if (!TimeManager.getInstance().getIsDayTime()) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.setProjectionMatrix(uiCamera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.3f);
+            shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
     }
 
     @Override
