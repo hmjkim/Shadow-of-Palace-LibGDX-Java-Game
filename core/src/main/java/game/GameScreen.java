@@ -284,6 +284,8 @@ public class GameScreen implements Screen {
         }
         game.batch.end();
         // Optionally, render the Box2D debug lines (comment out if not needed).
+        // Renderer our Box2DDebugLines
+        debugRenderer.render(world, camera.combined);
 
         uiCamera.update();
         // Set the SpriteBatch's projection matrix to the camera's combined matrix.
