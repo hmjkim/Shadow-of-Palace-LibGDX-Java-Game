@@ -33,7 +33,7 @@ public class PlayerInventory {
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
 
-        this.playerInventory = new Texture("inventory.jpg");
+        this.playerInventory = new Texture("inventory/inventory-685x100.png");
 
         font = new BitmapFont();
         font.getData().setScale(0.84f);
