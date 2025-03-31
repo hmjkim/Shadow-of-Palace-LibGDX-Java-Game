@@ -58,6 +58,7 @@ public class GameScreen implements Screen {
     private int stage;
     private final List<Enemy> npcList;
     private List<Enemy> enemyRemovalQueue;
+    private int enemyCount;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -136,6 +137,7 @@ public class GameScreen implements Screen {
 
         npcList = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
+        this.enemyCount = 5;
         spawnNPCs();
     }
 
@@ -145,17 +147,8 @@ public class GameScreen implements Screen {
         }
     }
 
-    private int getNPCCount(int stage) {
-        if (stage == 3) {
-            return 4;
-        } else if (stage == 4) {
-            return 5;
-        }
-        return 3;
-    }
-
     private void spawnNPCs() {
-        int count = getNPCCount(stage);
+        int count = this.enemyCount;
         if (npcList != null) {
             for (Enemy npc : npcList) {
                 world.destroyBody(npc.getBody());
@@ -170,6 +163,7 @@ public class GameScreen implements Screen {
 
     public void nextStage() {
         stage++;
+        enemyCount++;
         spawnNPCs();
     }
 
