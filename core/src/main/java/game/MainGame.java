@@ -1,5 +1,6 @@
 package game;
 
+import Sprites.PlayerHealth;
 import Sprites.PlayerInventory;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +14,7 @@ public class MainGame extends Game {
      */
     public SpriteBatch batch;
     public PlayerInventory inventory;
+    public PlayerHealth health;
 
     // Conversion constant: How many pixels equal one Box2D world unit.
     public static final float PIXELS_PER_METER = 100f;
@@ -33,6 +35,7 @@ public class MainGame extends Game {
     public void create() {
         this.batch = new SpriteBatch();
         inventory = PlayerInventory.getInstance();
+        health = PlayerHealth.getInstance();
         batch = new SpriteBatch();
         // Set the initial screen (GameScreen uses Box2D, Tiled map, etc.)
         setScreen(new GameScreen(this));
@@ -56,6 +59,7 @@ public class MainGame extends Game {
         if (getScreen() != null)
             getScreen().dispose();
         inventory.dispose();
+        health.dispose();
     }
 }
 

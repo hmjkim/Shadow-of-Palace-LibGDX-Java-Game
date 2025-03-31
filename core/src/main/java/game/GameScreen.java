@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import Sprites.Direction;
+import Sprites.PlayerHealth;
 
 import java.sql.Time;
 
@@ -53,6 +54,8 @@ public class GameScreen implements Screen {
 
     private TimeManager timeManager;
     private ShapeRenderer shapeRenderer;
+
+    private PlayerHealth health;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -239,6 +242,7 @@ public class GameScreen implements Screen {
         // Draw the player sprite.
         player.draw(game.batch);
         game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        game.health.drawHearts(game.batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.batch.end();
 
         if (!TimeManager.getInstance().getIsDayTime()) {
@@ -273,6 +277,7 @@ public class GameScreen implements Screen {
         mapRenderer.dispose();
         world.dispose();
         debugRenderer.dispose();
+        shapeRenderer.dispose();
 //        player.dispose();
     }
 }
