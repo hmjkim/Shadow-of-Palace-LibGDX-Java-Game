@@ -81,9 +81,6 @@ public class PlayerInventory {
     }
 
     public void drawInventory(SpriteBatch batch, int screenWidth, int screenHeight) {
-        int iconSize = 32;
-        int padding = 10;
-
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
         float y = 20;
 
