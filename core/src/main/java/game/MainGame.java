@@ -17,7 +17,7 @@ public class MainGame extends Game {
     public PlayerHealth health;
 
     // Conversion constant: How many pixels equal one Box2D world unit.
-    public static final float PIXELS_PER_METER = 100f;
+    public static final float PIXELS_PER_METER = 70f;
     // Desired viewport dimensions in pixels (this zooms the camera to a 700×500 pixel area).
     public static final int VIEWPORT_WIDTH = 700;
     public static final int VIEWPORT_HEIGHT = 500;
