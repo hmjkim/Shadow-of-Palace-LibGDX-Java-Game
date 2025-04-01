@@ -108,13 +108,13 @@ public class Player extends Sprite {
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.DynamicBody;
         // Set the initial position (convert from pixels to world units).
-        bdef.position.set(100 / MainGame.PIXELS_PER_METER, 100 / MainGame.PIXELS_PER_METER);
+        bdef.position.set(150 / MainGame.PIXELS_PER_METER, 160 / MainGame.PIXELS_PER_METER);
         body = world.createBody(bdef);
 
         // --- Define Collision Shape ---
         // Create a circular shape for the player's collision.
         CircleShape shape = new CircleShape();
-        int shapeRadius = 22;
+        int shapeRadius = 7;
         shape.setRadius(shapeRadius / MainGame.PIXELS_PER_METER);
 
         // Create a fixture definition with density and friction.

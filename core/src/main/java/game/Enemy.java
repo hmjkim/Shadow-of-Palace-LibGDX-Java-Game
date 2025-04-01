@@ -41,7 +41,7 @@ public class Enemy extends Sprite {
         body = world.createBody(bodyDef);
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(10 / MainGame.PIXELS_PER_METER);
+        shape.setRadius(7 / MainGame.PIXELS_PER_METER);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
