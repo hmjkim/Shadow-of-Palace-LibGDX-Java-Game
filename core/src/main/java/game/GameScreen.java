@@ -79,6 +79,9 @@ public class GameScreen implements Screen {
     // Fonts and Text
     private final GlyphLayout layout;
     private BitmapFont actionBoxFont;
+    private final List<SystemMessage> messageQueue;
+    private BitmapFont messageFont;
+
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -165,7 +168,15 @@ public class GameScreen implements Screen {
         this.enemyCount = 3;
         spawnNPCs();
         spawnRoyalConsorts();
+
+        // System Message
+        messageQueue = new ArrayList<>();
+
     }
+    public void showMessage(String text, Color color) {
+        messageQueue.add(new SystemMessage(text, color));
+    }
+
 
     public void scheduleEnemyRemoval(Enemy enemy) {
         if (!enemyRemovalQueue.contains(enemy)) {
@@ -260,6 +271,9 @@ public class GameScreen implements Screen {
 //    }
     public void update(float delta) {
         handleInput(delta);
+        // Remove expired messages
+        messageQueue.removeIf(message -> message.update(delta));
+
         world.step(1/60f, 6, 2);
         if (!enemyRemovalQueue.isEmpty()) {
             for (Enemy enemy : enemyRemovalQueue) {
@@ -332,6 +346,7 @@ public class GameScreen implements Screen {
                     consort.isPoisoned(); // Mark them poisoned
                     player.setRank(consort.getType()); // inherit the new rank
                     System.out.println("Poisoned " + consort.getType().getName());
+                    showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
                     break; // Only poison one at a time
                 }
             }
@@ -446,6 +461,21 @@ public class GameScreen implements Screen {
 
         font.draw(game.batch, layout, x, y);
 
+        // System Message
+        float messageY = 150; // Start position from bottom
+
+        for (SystemMessage msg : messageQueue) {
+            Color original = messageFont.getColor();
+            messageFont.setColor(msg.getColor().r, msg.getColor().g, msg.getColor().b, msg.getAlpha());
+
+            layout.setText(messageFont, msg.getText());
+            float messageX = (Gdx.graphics.getWidth() - layout.width) / 2;
+            messageFont.draw(game.batch, layout, messageX, messageY);
+
+            messageY += layout.height + 10; // stack vertically
+            messageFont.setColor(original); // Reset
+        }
+
         game.batch.end();
 
         // Night overlay
@@ -476,6 +506,8 @@ public class GameScreen implements Screen {
         font = FontManager.getDefaultFont();
         font.setColor(1, 1, 1, 1); // white and opaque
         actionBoxFont = FontManager.generateFont(20, Color.valueOf("c45800"));
+        messageFont = FontManager.generateFont(30, Color.WHITE);
+
 
     }
     @Override public void hide() {
@@ -494,9 +526,14 @@ public class GameScreen implements Screen {
         // Dispose all disposable resources.
         map.dispose();
         mapRenderer.dispose();
+
+        // Font
         FontManager.dispose();
         if (actionBoxFont != null) {
             actionBoxFont.dispose();
+        }
+        if (messageFont != null) {
+            messageFont.dispose();
         }
         world.dispose();
         debugRenderer.dispose();
