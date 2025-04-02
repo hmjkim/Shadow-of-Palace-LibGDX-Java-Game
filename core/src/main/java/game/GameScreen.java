@@ -259,6 +259,10 @@ public class GameScreen implements Screen {
             npc.update(delta, playerPos);
         }
 
+        for (RoyalConsort consort : royalConsortList) {
+            consort.updateActionBox(playerPos);
+        }
+
         // Get the player's Box2D position and try to center the camera on it
         camera.position.set(player.getBody().getPosition(), 0);
 

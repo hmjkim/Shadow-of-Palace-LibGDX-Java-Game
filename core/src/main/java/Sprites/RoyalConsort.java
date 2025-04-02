@@ -1,7 +1,11 @@
 package Sprites;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import game.MainGame;
 
 public class RoyalConsort extends Sprite {
@@ -9,16 +13,64 @@ public class RoyalConsort extends Sprite {
     private RoyalConsortType type;
     private boolean isAlive;
 
-    public RoyalConsort(final TextureRegion region, final RoyalConsortType type, final float initialPositionX, final float initialPositionY) {
+    // Shared action box image (used to prompt the player).
+    private static TextureRegion actionBox;
+    // Flag to determine whether the action box should be shown.
+    private boolean showActionBox = false;
+    // Activation distance in world units (within which the action box appears).
+    private static final float ACTIVATION_DISTANCE = 0.5f;
+
+    /**
+     * Constructs a RoyalConsort with its front view image.
+     *
+     * @param region the consort's front view image.
+     * @param type the consort's type and rank.
+     * @param initialPositionX the x position in world units.
+     * @param initialPositionY the y position in world units.
+     */
+    public RoyalConsort(final TextureRegion region, final RoyalConsortType type,
+                        final float initialPositionX, final float initialPositionY) {
         super(region);
         this.type = type;
         this.isAlive = true;
-        // Scale the sprite using the region's dimensions, just like in Enemy.
         setSize(region.getRegionWidth() / MainGame.PIXELS_PER_METER,
-                region.getRegionHeight() / MainGame.PIXELS_PER_METER);
+            region.getRegionHeight() / MainGame.PIXELS_PER_METER);
         setPosition(initialPositionX, initialPositionY);
+        setOriginCenter();
+        // Load the actionBox once if it hasn't been loaded yet.
+        if (actionBox == null) {
+            actionBox = new TextureRegion(new Texture("action-box.png"));
+        }
     }
 
+    /**
+     * Updates whether the action box should be shown, based on the player's position.
+     *
+     * @param playerPosition the player's position in world units
+     */
+    public void updateActionBox(Vector2 playerPosition) {
+        // Calculate the position above the consort's head.
+        float headX = getX() + getWidth() / 2;
+        float headY = getY() + getHeight();
+        // Calculate the Euclidean distance between that point and the player's position
+        float distance = new Vector2(headX, headY).dst(playerPosition);
+        showActionBox = (distance <= ACTIVATION_DISTANCE);
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        super.draw(batch);
+        // If the action box should be visible, draw it above the consort.
+        if (showActionBox) {
+            float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
+            float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
+            float boxX = getX() + getWidth() / 2 - boxWidth / 2;
+            float boxY = getY() + getHeight() + 0.1f;
+            batch.draw(actionBox, boxX, boxY, boxWidth, boxHeight);
+        }
+    }
+
+    // Getters and setters for type, isAlive, etc.
     public RoyalConsortType getType() {
         return type;
     }
@@ -31,6 +83,9 @@ public class RoyalConsort extends Sprite {
         return isAlive;
     }
 
+    /**
+     * Marks the consort as eliminated via poisoning.
+     */
     public void isPoisoned() {
         isAlive = false;
     }
