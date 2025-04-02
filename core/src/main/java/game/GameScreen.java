@@ -1,14 +1,18 @@
 package game;
 
+import Helper.FontManager;
 import Sprites.Player;
 import Sprites.RoyalConsort;
 import Sprites.RoyalConsortType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -20,9 +24,12 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+
 import Sprites.Direction;
 
 import java.util.ArrayList;
@@ -43,6 +50,7 @@ public class GameScreen implements Screen {
     private final Viewport viewport;
     // Reference to the main game to access its SpriteBatch.
     private final MainGame game;
+    private BitmapFont font;
 
     private TextureAtlas atlas;
 
@@ -66,6 +74,10 @@ public class GameScreen implements Screen {
 
     // Royal Consorts
     private List<RoyalConsort> royalConsortList;
+
+    // Fonts and Text
+    private final GlyphLayout layout;
+    private BitmapFont actionBoxFont;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -98,6 +110,9 @@ public class GameScreen implements Screen {
         uiCamera = new OrthographicCamera();
         uiCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         uiCamera.update();
+
+        // --- Text ---
+        layout = new GlyphLayout();;
 
         // --- Box2D World Setup ---
         // Create the Box2D world with zero gravity (suitable for a top-down view).
@@ -145,7 +160,7 @@ public class GameScreen implements Screen {
         royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
-        this.enemyCount = 5;
+        this.enemyCount = 3;
         spawnNPCs();
         spawnRoyalConsorts();
     }
@@ -331,57 +346,83 @@ public class GameScreen implements Screen {
         pBody.setLinearVelocity(velocity);
     }
 
+    private Vector2 worldToScreenCoordinates(Vector2 worldPos) {
+        Vector3 temporaryVector3 = new Vector3(worldPos.x, worldPos.y, 0);
+        camera.project(temporaryVector3); // Converts from world → screen coordinates
+        return new Vector2(temporaryVector3.x, temporaryVector3.y);
+    }
+
+
     @Override
     public void render(float delta) {
-        // Update game logic.
+        // Update game logic
         update(delta);
 
-        // Clear the screen.
+        // Clear the screen
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        camera.update();
 
-        // Render the Tiled map.
+        // --- WORLD CAMERA RENDERING ---
+        camera.update();
+        // Render the Tiled map
         mapRenderer.setView(camera);
         mapRenderer.render();
 
-        player.update(delta);
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-        // Render RoyalConsorts
-        for (RoyalConsort royalConsort : royalConsortList) {
-            royalConsort.draw(game.batch);
-        }
-
-        player.draw(game.batch);
-        for (Enemy npc : npcList) {
-            npc.draw(game.batch);
-        }
-
-
-        game.batch.end();
         // Optionally, render the Box2D debug lines (comment out if not needed).
         // Renderer our Box2DDebugLines
         debugRenderer.render(world, camera.combined);
 
-        uiCamera.update();
-        // Set the SpriteBatch's projection matrix to the camera's combined matrix.
-        game.batch.setProjectionMatrix(uiCamera.combined);
+        game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        // Draw the player sprite.
+
+        player.update(delta);
+        // Draw world objects
+        for (RoyalConsort royalConsort : royalConsortList) {
+            royalConsort.draw(game.batch);
+        }
         player.draw(game.batch);
-        game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth());
-        game.health.drawHearts(game.batch, Gdx.graphics.getHeight());
+        for (Enemy npc : npcList) {
+            npc.draw(game.batch);
+        }
         game.batch.end();
 
+        // --- UI CAMERA RENDERING ---
+        uiCamera.update();
+        game.batch.setProjectionMatrix(uiCamera.combined);
+        game.batch.begin();
+
+        game.inventory.drawInventory(game.batch, Gdx.graphics.getWidth());
+        game.health.drawHearts(game.batch, Gdx.graphics.getHeight());
+
+
+        for (RoyalConsort consort : royalConsortList) {
+            if (consort.shouldShowActionText()) {
+                Vector2 screenCenter = worldToScreenCoordinates(consort.getActionBoxCenterWorldPosition());
+
+                String actionText = "Press [X] to Poison";
+                layout.setText(actionBoxFont, actionText);
+
+                // Center the text on the screen position
+                float textX = screenCenter.x - layout.width / 2f;
+                float textY = screenCenter.y + layout.height / 2f;
+
+                actionBoxFont.draw(game.batch, layout, textX, textY);
+            }
+        }
+
+        game.batch.end();
+
+        // Night overlay
         if (!TimeManager.getInstance().getIsDayTime()) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
             shapeRenderer.setProjectionMatrix(uiCamera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0, 0, 0, 0.3f);
             shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             shapeRenderer.end();
+
             Gdx.gl.glDisable(GL20.GL_BLEND);
         }
     }
@@ -396,8 +437,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-    }
+        font = FontManager.getDefaultFont();
+        font.setColor(1, 1, 1, 1); // white and opaque
+        actionBoxFont = FontManager.generateFont(20, Color.valueOf("c45800"));
 
+    }
     @Override public void hide() {
     }
 
@@ -414,6 +458,10 @@ public class GameScreen implements Screen {
         // Dispose all disposable resources.
         map.dispose();
         mapRenderer.dispose();
+        FontManager.dispose();
+        if (actionBoxFont != null) {
+            actionBoxFont.dispose();
+        }
         world.dispose();
         debugRenderer.dispose();
         shapeRenderer.dispose();

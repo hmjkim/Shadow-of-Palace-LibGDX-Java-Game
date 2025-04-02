@@ -57,10 +57,29 @@ public class RoyalConsort extends Sprite {
         showActionBox = (distance <= ACTIVATION_DISTANCE);
     }
 
+    public boolean shouldShowActionText() {
+        return showActionBox;
+    }
+
+    public Vector2 getActionBoxCenterWorldPosition() {
+        float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
+        float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
+
+        float boxCenterX = getX() + getWidth() / 2f;
+        float boxCenterY = getY() + getHeight() + 0.1f + boxHeight / 2f;
+
+        return new Vector2(boxCenterX, boxCenterY);
+    }
+
+    public static TextureRegion getActionBoxRegion() {
+        return actionBox;
+    }
+
     @Override
     public void draw(Batch batch) {
-        super.draw(batch);
-        // If the action box should be visible, draw it above the consort.
+        super.draw(batch); // Draw the consort
+
+        // If the action box should be visible, draw it above the consort
         if (showActionBox) {
             float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
             float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
@@ -70,7 +89,6 @@ public class RoyalConsort extends Sprite {
         }
     }
 
-    // Getters and setters for type, isAlive, etc.
     public RoyalConsortType getType() {
         return type;
     }
