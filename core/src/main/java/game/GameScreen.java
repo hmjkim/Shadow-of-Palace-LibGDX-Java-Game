@@ -1,6 +1,8 @@
 package game;
 
 import Sprites.Player;
+import Sprites.RoyalConsort;
+import Sprites.RoyalConsortType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -8,8 +10,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -59,6 +63,9 @@ public class GameScreen implements Screen {
     private final List<Enemy> npcList;
     private List<Enemy> enemyRemovalQueue;
     private int enemyCount;
+
+    // Royal Consorts
+    private List<RoyalConsort> royalConsortList;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -135,10 +142,12 @@ public class GameScreen implements Screen {
 
         this.stage = 1;
 
+        royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
         this.enemyCount = 5;
         spawnNPCs();
+        spawnRoyalConsorts();
     }
 
     public void scheduleEnemyRemoval(Enemy enemy) {
@@ -160,6 +169,42 @@ public class GameScreen implements Screen {
             npcList.add(new Enemy(world, this, enemy));
         }
     }
+
+    public void spawnRoyalConsorts() {
+        MapObjects royalConsortObjects = map.getLayers().get("RoyalConsorts").getObjects();
+        for (MapObject object : royalConsortObjects) {
+            if (object instanceof RectangleMapObject) {
+                RectangleMapObject rectangleObject = (RectangleMapObject) object;
+                Rectangle rectangle = rectangleObject.getRectangle();
+                // Get the object name (e.g., "Gwi In", "Suk Won", etc.)
+                String objectName = object.getName();
+                for (RoyalConsortType type : RoyalConsortType.values()) {
+                    if (type.getName().equalsIgnoreCase(objectName)) {
+                        // First, calculate the center of the rectangle (in pixels) and convert to world units.
+                        float centerX = (rectangle.x + rectangle.width / 2f) / MainGame.PIXELS_PER_METER;
+                        float centerY = (rectangle.y + rectangle.height / 2f) / MainGame.PIXELS_PER_METER;
+
+                        // Create the texture region for the NPC using the front image file path from the enum.
+                        TextureRegion region = new TextureRegion(new Texture(type.getFrontImagePath()));
+
+                        // Calculate the sprite's size in world units (if using the default scaling similar to Enemy).
+                        float spriteWidth = region.getRegionWidth() / MainGame.PIXELS_PER_METER;
+                        float spriteHeight = region.getRegionHeight() / MainGame.PIXELS_PER_METER;
+
+                        // Calculate the position so that the sprite is centered on the rectangle.
+                        float finalX = centerX - spriteWidth / 2f;
+                        float finalY = centerY - spriteHeight / 2f;
+
+                        // Create the RoyalConsort instance with its type and adjusted position.
+                        RoyalConsort consort = new RoyalConsort(region, type, finalX, finalY);
+                        royalConsortList.add(consort);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 
     public void nextStage() {
         stage++;
@@ -299,10 +344,17 @@ public class GameScreen implements Screen {
         player.update(delta);
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        // Render RoyalConsorts
+        for (RoyalConsort royalConsort : royalConsortList) {
+            royalConsort.draw(game.batch);
+        }
+
         player.draw(game.batch);
         for (Enemy npc : npcList) {
             npc.draw(game.batch);
         }
+
+
         game.batch.end();
         // Optionally, render the Box2D debug lines (comment out if not needed).
         // Renderer our Box2DDebugLines
