@@ -74,6 +74,7 @@ public class GameScreen implements Screen {
 
     // Royal Consorts
     private List<RoyalConsort> royalConsortList;
+    private final List<RoyalConsort> consortRemovalQueue;
 
     // Fonts and Text
     private final GlyphLayout layout;
@@ -159,6 +160,7 @@ public class GameScreen implements Screen {
 
         royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();
+        consortRemovalQueue = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
         this.enemyCount = 3;
         spawnNPCs();
@@ -275,8 +277,14 @@ public class GameScreen implements Screen {
         }
 
         for (RoyalConsort consort : royalConsortList) {
-            consort.updateActionBox(playerPos);
+            consort.updateActionBox(player.getBody().getPosition());
+
+            if (consort.updateDeath(delta)) {
+                consortRemovalQueue.add(consort);
+            }
         }
+        royalConsortList.removeAll(consortRemovalQueue);
+        consortRemovalQueue.clear();
 
         // Get the player's Box2D position and try to center the camera on it
         camera.position.set(player.getBody().getPosition(), 0);
@@ -390,6 +398,9 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
+        // Enable alpha (transparency)
+        game.batch.enableBlending();
+
         player.update(delta);
         // Draw world objects
         for (RoyalConsort royalConsort : royalConsortList) {
@@ -410,6 +421,7 @@ public class GameScreen implements Screen {
         game.health.drawHearts(game.batch, Gdx.graphics.getHeight());
 
 
+        // Action Box Poison Message
         for (RoyalConsort consort : royalConsortList) {
             if (consort.shouldShowActionText()) {
                 Vector2 screenCenter = worldToScreenCoordinates(consort.getActionBoxCenterWorldPosition());

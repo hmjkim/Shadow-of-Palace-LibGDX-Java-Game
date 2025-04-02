@@ -1,6 +1,7 @@
 package Sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -19,6 +20,11 @@ public class RoyalConsort extends Sprite {
     private boolean showActionBox = false;
     // Activation distance in world units (within which the action box appears).
     private static final float ACTIVATION_DISTANCE = 0.5f;
+
+    // For Death Fadeout Animation
+    private boolean isDying = false;
+    private float deathTimer = 0f;
+    private final float DEATH_DURATION = 1.5f; // seconds
 
     /**
      * Constructs a RoyalConsort with its front view image.
@@ -58,7 +64,8 @@ public class RoyalConsort extends Sprite {
     }
 
     public boolean shouldShowActionText() {
-        return showActionBox;
+        return showActionBox && !isDying;
+
     }
 
     public Vector2 getActionBoxCenterWorldPosition() {
@@ -75,20 +82,6 @@ public class RoyalConsort extends Sprite {
         return actionBox;
     }
 
-    @Override
-    public void draw(Batch batch) {
-        super.draw(batch); // Draw the consort
-
-        // If the action box should be visible, draw it above the consort
-        if (showActionBox) {
-            float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
-            float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
-            float boxX = getX() + getWidth() / 2 - boxWidth / 2;
-            float boxY = getY() + getHeight() + 0.1f;
-            batch.draw(actionBox, boxX, boxY, boxWidth, boxHeight);
-        }
-    }
-
     public RoyalConsortType getType() {
         return type;
     }
@@ -101,11 +94,57 @@ public class RoyalConsort extends Sprite {
         return isAlive;
     }
 
+    public boolean updateDeath(float delta) {
+        if (isDying) {
+            deathTimer += delta;
+            return deathTimer >= DEATH_DURATION;
+        }
+        return false;
+    }
+
     /**
      * Marks the consort as eliminated via poisoning.
      */
     public void isPoisoned() {
         isAlive = false;
-        setAlpha(0.5f); // semi-transparent
+        isDying = true;
+        deathTimer = 0;
     }
+
+    @Override
+    public void draw(Batch batch) {
+        float alpha = 1f;
+
+        if (isDying) {
+            alpha = 1f - (deathTimer / DEATH_DURATION);
+            if (alpha < 0f) alpha = 0f;
+        }
+
+        Color originalColor = batch.getColor();
+        setAlpha(alpha);
+
+        // 👻 Offset to make her float upward while fading
+        float riseOffset = isDying ? (deathTimer / DEATH_DURATION) * 0.5f : 0f;
+
+        // Apply vertical offset
+        float originalY = getY();
+        setY(originalY + riseOffset);
+
+        super.draw(batch);
+
+        // Reset Y back to prevent position drift
+        setY(originalY);
+
+        if (showActionBox && !isDying) {
+            float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
+            float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
+            float boxX = getX() + getWidth() / 2 - boxWidth / 2;
+            float boxY = getY() + getHeight() + 0.1f;
+            batch.draw(actionBox, boxX, boxY, boxWidth, boxHeight);
+        }
+
+        setColor(originalColor);
+    }
+
+
 }
