@@ -1,5 +1,6 @@
 package game;
 
+import Helper.FontManager;
 import Sprites.PlayerHealth;
 import Sprites.PlayerInventory;
 import com.badlogic.gdx.Game;
@@ -33,6 +34,9 @@ public class MainGame extends Game {
      */
     @Override
     public void create() {
+        // Initialize the font
+        FontManager.initialize();
+
         this.batch = new SpriteBatch();
         inventory = PlayerInventory.getInstance();
         health = PlayerHealth.getInstance();
@@ -60,6 +64,8 @@ public class MainGame extends Game {
             getScreen().dispose();
         inventory.dispose();
         health.dispose();
+        // Dispose of the font when the game is over
+        FontManager.dispose();
     }
 }
 
