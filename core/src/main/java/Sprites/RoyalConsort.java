@@ -106,5 +106,6 @@ public class RoyalConsort extends Sprite {
      */
     public void isPoisoned() {
         isAlive = false;
+        setAlpha(0.5f); // semi-transparent
     }
 }

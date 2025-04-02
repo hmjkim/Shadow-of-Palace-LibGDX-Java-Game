@@ -302,6 +302,8 @@ public class GameScreen implements Screen {
         camera.update();
         mapRenderer.setView(camera);
         TimeManager.getInstance().update(delta);
+
+        handlePoisonInput();
     }
 
     public boolean isPositionValid(float x, float y) {
@@ -313,6 +315,19 @@ public class GameScreen implements Screen {
 
     public TextureAtlas getAtlas() {
         return atlas;
+    }
+
+    private void handlePoisonInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {
+            for (RoyalConsort consort : royalConsortList) {
+                if (consort.shouldShowActionText() && consort.isAlive()) {
+                    consort.isPoisoned(); // Mark them poisoned
+                    player.setRank(consort.getType()); // inherit the new rank
+                    System.out.println("Poisoned " + consort.getType().getName());
+                    break; // Only poison one at a time
+                }
+            }
+        }
     }
 
     /**
