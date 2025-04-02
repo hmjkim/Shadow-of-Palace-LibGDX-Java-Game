@@ -425,6 +425,15 @@ public class GameScreen implements Screen {
             }
         }
 
+        // Rank HUD
+        String titleText = "Current Rank: " + player.getRank().getName(); // e.g., "Gwi In"
+        layout.setText(font, titleText);
+
+        float x = 20; // Left padding
+        float y = Gdx.graphics.getHeight() - 140; // Top padding from screen
+
+        font.draw(game.batch, layout, x, y);
+
         game.batch.end();
 
         // Night overlay

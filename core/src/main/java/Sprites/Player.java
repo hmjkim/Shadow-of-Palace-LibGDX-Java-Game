@@ -18,6 +18,8 @@ import game.TimeManager;
  * loads the player image, and updates its sprite position accordingly.
  */
 public class Player extends Sprite {
+    private RoyalConsortType rank;
+
     // Constants for your sprite sheet grid.
     private static final int CELL_WIDTH = 16 + 8;    // 24 pixels per cell in width
     private static final int CELL_HEIGHT = 24 + 8;   // 32 pixels per cell in height
@@ -49,6 +51,7 @@ public class Player extends Sprite {
         this.world = world;
         currentState = State.STANDING;
         previousState = State.STANDING;
+        rank = RoyalConsortType.GWI_IN;
         stateTimer = 0;
         direction = Direction.SOUTH;
         // --- Load Player Image ---
@@ -86,6 +89,14 @@ public class Player extends Sprite {
         // --- Set Sprite Bounds ---
         setBounds(CELL_WIDTH, (CELL_HEIGHT) * 2, FRAME_WIDTH / MainGame.PIXELS_PER_METER, FRAME_HEIGHT / MainGame.PIXELS_PER_METER);
         setRegion(playerStand);
+    }
+
+    public RoyalConsortType getRank() {
+        return rank;
+    }
+
+    public void setRank(RoyalConsortType rank) {
+        this.rank = rank;
     }
 
     /**
