@@ -46,6 +46,30 @@ public class PlayerInventory {
         return instance;
     }
 
+    public int getPoisonItemCount() {
+        return this.poisonItemCount;
+    }
+
+    public void removePoisonItem() {
+        this.poisonItemCount--;
+    }
+
+    public int getInvincibilityItemCount() {
+        return this.invincibilityItemCount;
+    }
+
+    public void removeInvincibilityItem() {
+        this.invincibilityItemCount--;
+    }
+
+    public int getHeartRecoveryItemCount() {
+        return this.heartRecoveryItemCount;
+    }
+
+    public void removeHeartRecoveryItem() {
+        this.heartRecoveryItemCount--;
+    }
+
     public void addWater() {
         this.waterCount++;
     }
