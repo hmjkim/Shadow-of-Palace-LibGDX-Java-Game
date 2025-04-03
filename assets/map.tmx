@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="90" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="29" nextobjectid="445">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="90" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="30" nextobjectid="466">
  <tileset firstgid="1" name="TilesetWater" tilewidth="16" tileheight="16" tilecount="476" columns="28">
   <image source="tiles/TilesetWater.png" width="448" height="272"/>
  </tileset>
@@ -1102,6 +1102,16 @@
   <object id="442" x="688" y="592" width="16" height="16"/>
   <object id="443" x="368" y="480" width="16" height="16"/>
   <object id="444" x="1104" y="336" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="29" name="Enemy">
+  <object id="458" name="npc8" x="146" y="768" width="14" height="16"/>
+  <object id="459" name="npc6" x="721" y="1040" width="15" height="17"/>
+  <object id="460" name="npc3" x="753" y="782" width="15" height="19"/>
+  <object id="461" name="npc4" x="1234" y="878" width="14" height="18"/>
+  <object id="462" name="npc7" x="1026" y="512" width="14" height="16"/>
+  <object id="463" name="npc2" x="688" y="432" width="15" height="17"/>
+  <object id="464" name="npc5" x="993" y="160" width="15" height="16"/>
+  <object id="465" name="npc1" x="209" y="238" width="15" height="18"/>
  </objectgroup>
  <objectgroup id="28" name="RoyalConsorts">
   <object id="431" name="Gwi In" x="368" y="480" width="16" height="16"/>
