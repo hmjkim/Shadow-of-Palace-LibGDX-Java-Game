@@ -171,6 +171,7 @@ public class GameScreen implements Screen {
         messageQueue = new ArrayList<>();
 
     }
+
     public void showMessage(String text, Color color) {
         messageQueue.add(new SystemMessage(text, color));
     }
@@ -198,14 +199,6 @@ public class GameScreen implements Screen {
                 System.out.println("HeartRecovery item used");
             } else {
                 System.out.println("No HeartRecovery item available");//tell player there is no the item
-            }
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            if (PlayerInventory.getInstance().getMysteryBoxCount() >= 1) {
-                PlayerInventory.getInstance().removeMysteryBox();
-                System.out.println("MysteryBox used");
-            } else {
-                System.out.println("No MysteryBox available");//tell player there is no the item
             }
         }
     }

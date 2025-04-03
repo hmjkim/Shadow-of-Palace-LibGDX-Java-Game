@@ -18,7 +18,6 @@ public class PlayerInventory {
     private int poisonItemCount;
     private int invincibilityItemCount;
     private int heartRecoveryItemCount;
-    private int mysteryBoxCount;
 
     private final Texture playerInventory;
 
@@ -33,7 +32,6 @@ public class PlayerInventory {
         this.poisonItemCount = 0;
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
-        this.mysteryBoxCount = 0;
 
         this.playerInventory = new Texture("inventory/inventory-685x100.png");
 
@@ -46,14 +44,6 @@ public class PlayerInventory {
             instance = new PlayerInventory();
         }
         return instance;
-    }
-
-    public int getMysteryBoxCount() {
-        return this.mysteryBoxCount;
-    }
-
-    public void removeMysteryBox() {
-        this.mysteryBoxCount--;
     }
 
     public int getPoisonItemCount() {
