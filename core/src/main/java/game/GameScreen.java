@@ -33,6 +33,8 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import Sprites.Direction;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -166,7 +168,7 @@ public class GameScreen implements Screen {
         consortRemovalQueue = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
         this.enemyCount = 3;
-        spawnNPCs();
+        spawnEnemy();
         spawnRoyalConsorts();
 
         // System Message
@@ -184,17 +186,43 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void spawnNPCs() {
-        int count = this.enemyCount;
-        if (npcList != null) {
-            for (Enemy npc : npcList) {
-                world.destroyBody(npc.getBody());
-            }
-            npcList.clear();
+    private void spawnEnemy() {
+        MapObjects enemyObjects = map.getLayers().get("Enemy").getObjects();
+        List<MapObject> enemyObjectsList = new ArrayList<>();
+        for (MapObject object : enemyObjects.getByType(RectangleMapObject.class)) {
+            enemyObjectsList.add(object);
         }
+        Collections.sort(enemyObjectsList, new Comparator<MapObject>() {
+            @Override
+            public int compare(MapObject a, MapObject b) {
+                try {
+                    String nameA = (String) a.getProperties().get("name");
+                    String nameB = (String) b.getProperties().get("name");
+                    if(nameA == null || nameB == null) {
+                        return 0;
+                    }
+                    String numStrA = nameA.replaceAll("[^0-9]", "");
+                    String numStrB = nameB.replaceAll("[^0-9]", "");
+                    int numA = numStrA.isEmpty() ? 0 : Integer.parseInt(numStrA);
+                    int numB = numStrB.isEmpty() ? 0 : Integer.parseInt(numStrB);
+                    return Integer.compare(numA, numB);
+                } catch (Exception e) {
+                    Gdx.app.error("Comparator", "Error comparing enemy names: " + e.getMessage());
+                    return 0;
+                }
+            }
+        });
+
+        npcList.clear();
+        int count = Math.min(enemyCount, enemyObjectsList.size());
         for (int i = 0; i < count; i++) {
-            Texture enemy = new Texture("enemy/npc" + (i + 1) + ".png");
-            npcList.add(new Enemy(world, this, enemy));
+            MapObject obj = enemyObjectsList.get(i);
+            Rectangle rect = ((RectangleMapObject)obj).getRectangle();
+            float centerX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
+            float centerY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
+            Vector2 spawnPos = new Vector2(centerX, centerY);
+            Texture enemyTexture = new Texture("enemy/npc" + (i + 1) + ".png");
+            npcList.add(new Enemy(world, this, enemyTexture, spawnPos));
         }
     }
 
@@ -237,7 +265,7 @@ public class GameScreen implements Screen {
     public void nextStage() {
         stage++;
         enemyCount++;
-        spawnNPCs();
+        spawnEnemy();
     }
 
     public float getMapWidth() {

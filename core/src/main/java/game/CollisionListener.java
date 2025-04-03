@@ -4,11 +4,12 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class CollisionListener implements ContactListener {
-    private GameScreen screen;
+    private final GameScreen screen;
 
     public CollisionListener(GameScreen screen) {
         this.screen = screen;
     }
+
     @Override
     public void beginContact(Contact contact) {
         Object userDataA = contact.getFixtureA().getUserData();

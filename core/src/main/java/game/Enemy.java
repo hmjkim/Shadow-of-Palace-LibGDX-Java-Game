@@ -18,8 +18,9 @@ public class Enemy extends Sprite {
     private static final float CHASEDURATION = 5f;
 
     private Vector2 scatterDirection;
+    private final Vector2 spawnPos;
 
-    public Enemy(World world, GameScreen screen, Texture texture) {
+    public Enemy(World world, GameScreen screen, Texture texture, Vector2 spawnPos) {
         super(texture);
         this.world = world;
         this.screen = screen;
@@ -27,16 +28,16 @@ public class Enemy extends Sprite {
         this.chaseTimer = 0f;
         this.isChasing = false;
         this.scatterDirection = getRandomDirection();
+        this.spawnPos = spawnPos;
 
         setSize(getTexture().getWidth() / MainGame.PIXELS_PER_METER,
             getTexture().getHeight() / MainGame.PIXELS_PER_METER);
-        createBody();
+        createBody(spawnPos);
     }
 
-    private void createBody() {
+    private void createBody(Vector2 spawnPos) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        Vector2 spawnPos = getRandomValidSpawn();
         bodyDef.position.set(spawnPos);
         body = world.createBody(bodyDef);
 
@@ -87,16 +88,18 @@ public class Enemy extends Sprite {
             isChasing = true;
             chaseTimer = 0f;
         }
+        Vector2 direction = new Vector2();
 
         if (isChasing) {
             chaseTimer += delta;
-            Vector2 direction = playerPosition.cpy().sub(body.getPosition());
-            if (direction.len() > 0.1f) {
-                direction.nor().scl(2f);
-                body.setLinearVelocity(direction);
+            direction.set(playerPosition).sub(body.getPosition());
+            if (direction.len() < 0.001f) {
+                direction.set(scatterDirection);
             } else {
-                body.setLinearVelocity(0, 0);
+                direction.nor();
             }
+            body.setLinearVelocity(direction.scl(1.0f));
+
             if (chaseTimer >= CHASEDURATION) {
                 isChasing = false;
                 stateTimer = 0f;
@@ -107,7 +110,8 @@ public class Enemy extends Sprite {
                 scatterDirection = getRandomDirection();
                 stateTimer = 0f;
             }
-            body.setLinearVelocity(scatterDirection.x, scatterDirection.y);
+            direction.set(scatterDirection);
+            body.setLinearVelocity(direction.scl(1.0f));
         }
 
         setPosition(body.getPosition().x - getWidth() / 2,
@@ -116,7 +120,7 @@ public class Enemy extends Sprite {
 
     public void onPlayerCollision() {
         world.destroyBody(body);
-        createBody();
+        createBody(this.spawnPos);
         stateTimer = 0f;
         isChasing = false;
         scatterDirection = getRandomDirection();
