@@ -1,9 +1,7 @@
 package game;
 
 import Helper.FontManager;
-import Sprites.Player;
-import Sprites.RoyalConsort;
-import Sprites.RoyalConsortType;
+import Sprites.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -29,8 +27,6 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-
-import Sprites.Direction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -179,6 +175,40 @@ public class GameScreen implements Screen {
         messageQueue.add(new SystemMessage(text, color));
     }
 
+    private void handleItemUsageInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+            if (PlayerInventory.getInstance().getPoisonItemCount() >= 1) {
+                PlayerInventory.getInstance().removePoisonItem();
+                System.out.println("Poison item used");
+            } else {
+                System.out.println("No poison item available");//tell player there is no the item
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+            if (PlayerInventory.getInstance().getInvincibilityItemCount() >= 1) {
+                PlayerInventory.getInstance().removeInvincibilityItem();
+                System.out.println("Invincibility item used");
+            } else {
+                System.out.println("No invincibility item available");//tell player there is no the item
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            if (PlayerInventory.getInstance().getHeartRecoveryItemCount() >= 1) {
+                PlayerInventory.getInstance().removeHeartRecoveryItem();
+                System.out.println("HeartRecovery item used");
+            } else {
+                System.out.println("No HeartRecovery item available");//tell player there is no the item
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
+            if (PlayerInventory.getInstance().getMysteryBoxCount() >= 1) {
+                PlayerInventory.getInstance().removeMysteryBox();
+                System.out.println("MysteryBox used");
+            } else {
+                System.out.println("No MysteryBox available");//tell player there is no the item
+            }
+        }
+    }
 
     public void scheduleEnemyRemoval(Enemy enemy) {
         if (!enemyRemovalQueue.contains(enemy)) {
