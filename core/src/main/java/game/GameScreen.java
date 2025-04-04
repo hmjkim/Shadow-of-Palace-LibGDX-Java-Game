@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -240,12 +239,12 @@ public class GameScreen implements Screen {
         int count = Math.min(enemyCount, enemyObjectsList.size());
         for (int i = 0; i < count; i++) {
             MapObject obj = enemyObjectsList.get(i);
-            Rectangle rect = ((RectangleMapObject)obj).getRectangle();
+            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
             float centerX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
             float centerY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
             Vector2 spawnPos = new Vector2(centerX, centerY);
             Texture enemyTexture = new Texture("enemy/npc" + (i + 1) + ".png");
-            npcList.add(new Enemy(world, this, enemyTexture, spawnPos));
+            npcList.add(new Enemy(world, enemyTexture, spawnPos));
         }
     }
 
@@ -328,7 +327,6 @@ public class GameScreen implements Screen {
         world.step(1/60f, 6, 2);
         if (!enemyRemovalQueue.isEmpty()) {
             for (Enemy enemy : enemyRemovalQueue) {
-                // enemy.onPlayerCollision() 내부에서 world.destroyBody(body) 및 재생성을 수행합니다.
                 enemy.onPlayerCollision();
             }
             enemyRemovalQueue.clear();

@@ -1,34 +1,38 @@
 package game;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.math.MathUtils;
 
 public class Enemy extends Sprite {
-    private World world;
+    private final World world;
     private Body body;
-    private GameScreen screen;
 
     private float stateTimer;
     private static final float CONSTANT_SPEED = 1.0f;
     private boolean isChasing;
     private float chaseTimer;
-    private static final float CHASEDURATION = 5f;
+    private static final float CHASE_DURATION = 5f;
+    private static final float CHASE_INTERVAL = 15f;
 
     private Vector2 scatterDirection;
     private final Vector2 spawnPos;
 
-    public Enemy(World world, GameScreen screen, Texture texture, Vector2 spawnPos) {
+    private boolean pendingRespawn;
+    private static final float MIN_RESPAWN_DISTANCE = 5.0f;
+
+    public Enemy(World world, Texture texture, Vector2 spawnPos) {
         super(texture);
         this.world = world;
-        this.screen = screen;
         this.stateTimer = 0f;
         this.chaseTimer = 0f;
         this.isChasing = false;
         this.scatterDirection = getRandomDirection();
         this.spawnPos = spawnPos;
+        this.pendingRespawn = false;
 
         setSize(getTexture().getWidth() / MainGame.PIXELS_PER_METER,
             getTexture().getHeight() / MainGame.PIXELS_PER_METER);
@@ -55,68 +59,73 @@ public class Enemy extends Sprite {
         shape.dispose();
     }
 
-    private Vector2 getRandomValidSpawn() {
-        float mapWidth = screen.getMapWidth();
-        float mapHeight = screen.getMapHeight();
-        Vector2 pos = new Vector2();
-        boolean valid = false;
-        int attempts = 0;
-        while (!valid && attempts < 100) {
-            pos.x = MathUtils.random(0, mapWidth);
-            pos.y = MathUtils.random(0, mapHeight);
-            if (screen.isPositionValid(pos.x, pos.y)) {
-                valid = true;
-            }
-            attempts++;
-        }
-        if (!valid) {
-            pos.set(mapWidth / 2, mapHeight / 2);
-        }
-        return pos;
-    }
-
-    public Body getBody() {
-        return body;
-    }
-
     private Vector2 getRandomDirection() {
         float angle = MathUtils.random(360);
         return new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle)).nor();
     }
 
     public void update(float delta, Vector2 playerPosition) {
-        Vector2 desiredDir = new Vector2();
+        if (pendingRespawn) {
+            if (playerPosition.dst(spawnPos) >= MIN_RESPAWN_DISTANCE) {
+                createBody(spawnPos);
+                pendingRespawn = false;
+                stateTimer = 0f;
+                isChasing = false;
+                scatterDirection = getRandomDirection();
+            } else {
+                return;
+            }
+        }
+
+        stateTimer += delta;
+
+        if (!isChasing && stateTimer >= CHASE_INTERVAL) {
+            isChasing = true;
+            chaseTimer = 0f;
+        }
+        Vector2 direction = new Vector2();
 
         if (isChasing) {
             chaseTimer += delta;
-            desiredDir.set(playerPosition).sub(body.getPosition());
-            if (desiredDir.len() < 0.01f) {
-                desiredDir.set(scatterDirection);
+            direction.set(playerPosition).sub(body.getPosition());
+            if (direction.len() < 0.001f) {
+                direction.set(scatterDirection);
             } else {
-                desiredDir.nor();
+                direction.nor();
             }
-            if (chaseTimer >= CHASEDURATION) {
+            body.setLinearVelocity(direction.scl(1.0f));
+            if (chaseTimer >= CHASE_DURATION) {
                 isChasing = false;
-                chaseTimer = 0f;
-                scatterDirection.set(desiredDir);
+                stateTimer = 0f;
+                scatterDirection = getRandomDirection();
             }
         } else {
-            float smallRotation = MathUtils.random(-5f, 5f) * delta;
-            scatterDirection.rotateDeg(smallRotation);
-            desiredDir.set(scatterDirection);
+            if (stateTimer >= 3f) {
+                scatterDirection = getRandomDirection();
+                stateTimer = 0f;
+            }
+            direction.set(scatterDirection);
+            body.setLinearVelocity(direction.scl(1.0f));
         }
 
-        body.setLinearVelocity(desiredDir.scl(CONSTANT_SPEED));
         setPosition(body.getPosition().x - getWidth() / 2,
             body.getPosition().y - getHeight() / 2);
     }
 
     public void onPlayerCollision() {
-        world.destroyBody(body);
-        createBody(this.spawnPos);
-        stateTimer = 0f;
-        isChasing = false;
-        scatterDirection = getRandomDirection();
+        if (body != null && !pendingRespawn) {
+            world.destroyBody(body);
+            body = null;
+            pendingRespawn = true;
+        }
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        if (pendingRespawn) {
+            return;
+        }
+        super.draw(batch);
     }
 }
 

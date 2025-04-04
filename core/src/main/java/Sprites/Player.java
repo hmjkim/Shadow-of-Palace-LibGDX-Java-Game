@@ -1,11 +1,9 @@
 package Sprites;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import game.GameScreen;
 import game.MainGame;
@@ -27,19 +25,17 @@ public class Player extends Sprite {
     private static final int FRAME_HEIGHT = 24;      // Actual graphic height
 
     private State currentState;
-    private State previousState;
-    private World world;
+    private final World world;
     private Body body;
 
     // private final Texture texture;
     // Animation
-    private TextureRegion playerStand;
-    private Animation<TextureRegion> walkUp;
-    private Animation<TextureRegion> walkRight;
-    private Animation<TextureRegion> walkDown;
+    private final TextureRegion playerStand;
+    private final Animation<TextureRegion> walkUp;
+    private final Animation<TextureRegion> walkRight;
+    private final Animation<TextureRegion> walkDown;
     private float stateTimer;
     private Direction direction;
-
 
     /**
      * Constructs the player, loads the image, and creates its Box2D body.
@@ -50,7 +46,6 @@ public class Player extends Sprite {
         super(screen.getAtlas().findRegion("gwi_in"));
         this.world = world;
         currentState = State.STANDING;
-        previousState = State.STANDING;
         rank = RoyalConsortType.GWI_IN;
         stateTimer = 0;
         direction = Direction.SOUTH;
