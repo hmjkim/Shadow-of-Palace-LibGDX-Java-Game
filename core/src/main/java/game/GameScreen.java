@@ -176,15 +176,7 @@ public class GameScreen implements Screen {
     }
 
     private void handleItemUsageInput() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            if (PlayerInventory.getInstance().getPoisonItemCount() >= 1) {
-                PlayerInventory.getInstance().removePoisonItem();
-                System.out.println("Poison item used");
-            } else {
-                System.out.println("No poison item available");//tell player there is no the item
-            }
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             if (PlayerInventory.getInstance().getInvincibilityItemCount() >= 1) {
                 PlayerInventory.getInstance().removeInvincibilityItem();
                 player.setInvincible(20f);
@@ -193,7 +185,7 @@ public class GameScreen implements Screen {
                 System.out.println("No invincibility item available");//tell player there is no the item
             }
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
             if (PlayerInventory.getInstance().getHeartRecoveryItemCount() >= 1) {
                 PlayerInventory.getInstance().removeHeartRecoveryItem();
                 PlayerHealth.getInstance().heal(1);
@@ -385,13 +377,18 @@ public class GameScreen implements Screen {
 
     private void handlePoisonInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {
-            for (RoyalConsort consort : royalConsortList) {
-                if (consort.shouldShowActionText() && consort.isAlive()) {
-                    consort.isPoisoned(); // Mark them poisoned
-                    player.setRank(consort.getType()); // inherit the new rank
-                    System.out.println("Poisoned " + consort.getType().getName());
-                    showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
-                    break; // Only poison one at a time
+            if (PlayerInventory.getInstance().getPoisonItemCount() >= 1) {
+                PlayerInventory.getInstance().removePoisonItem();
+                System.out.println("Poison item used");
+
+                for (RoyalConsort consort : royalConsortList) {
+                    if (consort.shouldShowActionText() && consort.isAlive()) {
+                        consort.isPoisoned(); // Mark them poisoned
+                        player.setRank(consort.getType()); // inherit the new rank
+                        System.out.println("Poisoned " + consort.getType().getName());
+                        showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
+                        break; // Only poison one at a time
+                    }
                 }
             }
         }
