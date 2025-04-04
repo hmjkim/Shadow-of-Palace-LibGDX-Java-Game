@@ -119,6 +119,10 @@ public class Player extends Sprite {
         return invincible;
     }
 
+    public float getInvincibilityTimeRemaining() {
+        return invincibilityTimer;
+    }
+
     /**
      * Creates the Box2D dynamic body for the player, including collision shape and fixture.
      * Sets the starting position to (100, 100) pixels (converted to world units).

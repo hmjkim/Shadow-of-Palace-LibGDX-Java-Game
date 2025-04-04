@@ -504,10 +504,18 @@ public class GameScreen implements Screen {
         String titleText = "Current Rank: " + player.getRank().getName(); // e.g., "Gwi In"
         layout.setText(font, titleText);
 
-        float x = 20; // Left padding
+        float x = 30; // Left padding
         float y = Gdx.graphics.getHeight() - 140; // Top padding from screen
 
         font.draw(game.batch, layout, x, y);
+
+        //Display remained time when player is invincible
+        if (player.isInvincible()) {
+            String invText = "Invincible: " + String.format("%.0f", player.getInvincibilityTimeRemaining()) + " sec";
+            layout.setText(font, invText);
+            float positionY = y - layout.height - 10;
+            font.draw(game.batch, layout, x, positionY);
+        }
 
         // System Message
         float messageY = 150; // Start position from bottom
