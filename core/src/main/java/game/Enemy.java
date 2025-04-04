@@ -15,6 +15,7 @@ public class Enemy extends Sprite {
     private static final float CONSTANT_SPEED = 1.0f;
     private boolean isChasing;
     private float chaseTimer;
+    private GameScreen screen;
     private static final float CHASE_DURATION = 5f;
     private static final float CHASE_INTERVAL = 15f;
 
@@ -24,11 +25,12 @@ public class Enemy extends Sprite {
     private boolean pendingRespawn;
     private static final float MIN_RESPAWN_DISTANCE = 5.0f;
 
-    public Enemy(World world, Texture texture, Vector2 spawnPos) {
+    public Enemy(World world, GameScreen screen, Texture texture, Vector2 spawnPos) {
         super(texture);
         this.world = world;
         this.stateTimer = 0f;
         this.chaseTimer = 0f;
+        this.screen = screen;
         this.isChasing = false;
         this.scatterDirection = getRandomDirection();
         this.spawnPos = spawnPos;
@@ -113,6 +115,10 @@ public class Enemy extends Sprite {
     }
 
     public void onPlayerCollision() {
+        if (screen.getPlayer().isInvincible()) {
+            return;
+        }
+
         if (body != null && !pendingRespawn) {
             world.destroyBody(body);
             body = null;

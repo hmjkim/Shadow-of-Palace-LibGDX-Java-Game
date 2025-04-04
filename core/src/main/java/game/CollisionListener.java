@@ -16,11 +16,17 @@ public class CollisionListener implements ContactListener {
         Object userDataB = contact.getFixtureB().getUserData();
 
         if (userDataA instanceof Sprites.Player && userDataB instanceof Enemy) {
-            ((Sprites.Player) userDataA).hitByNPC();
-            screen.scheduleEnemyRemoval((Enemy) userDataB);
+            Sprites.Player player = (Sprites.Player) userDataA;
+            if (!player.isInvincible()) {
+                player.hitByNPC();
+                screen.scheduleEnemyRemoval((Enemy) userDataB);
+            }
         } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
-            ((Sprites.Player) userDataB).hitByNPC();
-            screen.scheduleEnemyRemoval((Enemy) userDataA);
+            Sprites.Player player = (Sprites.Player) userDataB;
+            if (!player.isInvincible()) {
+                player.hitByNPC();
+                screen.scheduleEnemyRemoval((Enemy) userDataA);
+            }
         }
     }
 
@@ -30,6 +36,20 @@ public class CollisionListener implements ContactListener {
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
+        Object userDataA = contact.getFixtureA().getUserData();
+        Object userDataB = contact.getFixtureB().getUserData();
+
+        if (userDataA instanceof Sprites.Player && userDataB instanceof Enemy) {
+            Sprites.Player player = (Sprites.Player) userDataA;
+            if (player.isInvincible()) {
+                contact.setEnabled(false);
+            }
+        } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
+            Sprites.Player player = (Sprites.Player) userDataB;
+            if (player.isInvincible()) {
+                contact.setEnabled(false);
+            }
+        }
     }
 
     @Override

@@ -37,6 +37,9 @@ public class Player extends Sprite {
     private float stateTimer;
     private Direction direction;
 
+    private boolean invincible;
+    private float invincibilityTimer;
+
     /**
      * Constructs the player, loads the image, and creates its Box2D body.
      *
@@ -49,6 +52,8 @@ public class Player extends Sprite {
         rank = RoyalConsortType.GWI_IN;
         stateTimer = 0;
         direction = Direction.SOUTH;
+        this.invincible = false;
+        this.invincibilityTimer = 0f;
         // --- Load Player Image ---
         // Load the player's texture. Ensure "player.png" is in your assets folder.
         // texture = new Texture("player.png");
@@ -105,6 +110,14 @@ public class Player extends Sprite {
         return new TextureRegion(getTexture(), x, y, FRAME_WIDTH, FRAME_HEIGHT);
     }
 
+    public void setInvincible(float time) {
+        invincible = true;
+        invincibilityTimer = time;
+    }
+
+    public boolean isInvincible() {
+        return invincible;
+    }
 
     /**
      * Creates the Box2D dynamic body for the player, including collision shape and fixture.
@@ -154,6 +167,12 @@ public class Player extends Sprite {
 //        setRegion(getFrame(delta));
 //    }
     public void update(float delta) {
+        if (invincible) {
+            invincibilityTimer -= delta;
+            if (invincibilityTimer <= 0f) {
+                invincible = false;
+            }
+        }
         // Center the sprite on the Box2D body's position.
         setPosition(
             body.getPosition().x - getWidth() / 2,
@@ -238,6 +257,10 @@ public class Player extends Sprite {
     }
 
     public void hitByNPC() {
+        if (isInvincible()) {
+            return;
+        }
+
         float damage = TimeManager.getInstance().getIsDayTime() ? 0.5f : 1.0f;
         System.out.println("Collision happened");
         PlayerHealth.getInstance().takeDamage(damage);

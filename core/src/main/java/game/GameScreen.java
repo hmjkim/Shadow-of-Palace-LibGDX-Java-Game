@@ -187,6 +187,7 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             if (PlayerInventory.getInstance().getInvincibilityItemCount() >= 1) {
                 PlayerInventory.getInstance().removeInvincibilityItem();
+                player.setInvincible(20f);
                 System.out.println("Invincibility item used");
             } else {
                 System.out.println("No invincibility item available");//tell player there is no the item
@@ -244,7 +245,7 @@ public class GameScreen implements Screen {
             float centerY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
             Vector2 spawnPos = new Vector2(centerX, centerY);
             Texture enemyTexture = new Texture("enemy/npc" + (i + 1) + ".png");
-            npcList.add(new Enemy(world, enemyTexture, spawnPos));
+            npcList.add(new Enemy(world, this, enemyTexture, spawnPos));
         }
     }
 
@@ -377,13 +378,6 @@ public class GameScreen implements Screen {
         handlePoisonInput();
     }
 
-    public boolean isPositionValid(float x, float y) {
-        if (x < 0 || y < 0 || x > getMapWidth() || y > getMapHeight()) {
-            return false;//check later
-        }
-        return true;
-    }
-
     public TextureAtlas getAtlas() {
         return atlas;
     }
@@ -432,6 +426,10 @@ public class GameScreen implements Screen {
         // Set the player's velocity every frame.
         pBody.setLinearVelocity(velocity);
         handleItemUsageInput();
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     private Vector2 worldToScreenCoordinates(Vector2 worldPos) {
