@@ -196,6 +196,7 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
             if (PlayerInventory.getInstance().getHeartRecoveryItemCount() >= 1) {
                 PlayerInventory.getInstance().removeHeartRecoveryItem();
+                PlayerHealth.getInstance().heal(1);
                 System.out.println("HeartRecovery item used");
             } else {
                 System.out.println("No HeartRecovery item available");//tell player there is no the item
