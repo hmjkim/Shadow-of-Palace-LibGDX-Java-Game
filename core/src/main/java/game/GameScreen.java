@@ -433,6 +433,7 @@ public class GameScreen implements Screen {
         }
         // Set the player's velocity every frame.
         pBody.setLinearVelocity(velocity);
+        handleItemUsageInput();
     }
 
     private Vector2 worldToScreenCoordinates(Vector2 worldPos) {

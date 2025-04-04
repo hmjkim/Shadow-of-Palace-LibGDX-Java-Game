@@ -12,7 +12,7 @@ public class Enemy extends Sprite {
     private GameScreen screen;
 
     private float stateTimer;
-    private static final float CHASEINTERVAL = 15f;
+    private static final float CONSTANT_SPEED = 1.0f;
     private boolean isChasing;
     private float chaseTimer;
     private static final float CHASEDURATION = 5f;
@@ -48,6 +48,9 @@ public class Enemy extends Sprite {
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
         fixtureDef.friction = 0.5f;
+
+        fixtureDef.filter.categoryBits = 0x0002;
+        fixtureDef.filter.maskBits = (short)(0xFFFF & ~(0x0002));
         body.createFixture(fixtureDef).setUserData(this);
         shape.dispose();
     }
@@ -82,38 +85,28 @@ public class Enemy extends Sprite {
     }
 
     public void update(float delta, Vector2 playerPosition) {
-        stateTimer += delta;
-
-        if (!isChasing && stateTimer >= CHASEINTERVAL) {
-            isChasing = true;
-            chaseTimer = 0f;
-        }
-        Vector2 direction = new Vector2();
+        Vector2 desiredDir = new Vector2();
 
         if (isChasing) {
             chaseTimer += delta;
-            direction.set(playerPosition).sub(body.getPosition());
-            if (direction.len() < 0.001f) {
-                direction.set(scatterDirection);
+            desiredDir.set(playerPosition).sub(body.getPosition());
+            if (desiredDir.len() < 0.01f) {
+                desiredDir.set(scatterDirection);
             } else {
-                direction.nor();
+                desiredDir.nor();
             }
-            body.setLinearVelocity(direction.scl(1.0f));
-
             if (chaseTimer >= CHASEDURATION) {
                 isChasing = false;
-                stateTimer = 0f;
-                scatterDirection = getRandomDirection();
+                chaseTimer = 0f;
+                scatterDirection.set(desiredDir);
             }
         } else {
-            if (stateTimer >= 3f) {
-                scatterDirection = getRandomDirection();
-                stateTimer = 0f;
-            }
-            direction.set(scatterDirection);
-            body.setLinearVelocity(direction.scl(1.0f));
+            float smallRotation = MathUtils.random(-5f, 5f) * delta;
+            scatterDirection.rotateDeg(smallRotation);
+            desiredDir.set(scatterDirection);
         }
 
+        body.setLinearVelocity(desiredDir.scl(CONSTANT_SPEED));
         setPosition(body.getPosition().x - getWidth() / 2,
             body.getPosition().y - getHeight() / 2);
     }
