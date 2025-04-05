@@ -39,6 +39,7 @@ import java.util.List;
  * It also handles continuous input for movement and renders all elements.
  */
 public class GameScreen implements Screen {
+    private static final int INGREDIENT_COUNT = 30;
     // Contains the Tiled map data.
     private final TiledMap map;
     // Renders the loaded map to the actual screen.
@@ -176,8 +177,11 @@ public class GameScreen implements Screen {
         // Ingredients
         walkablePositions = getWalkablePositions();
         ingredientManager = new IngredientManager(walkablePositions);
-        // Spawn 10 ingredients spread over the walkable area
-        ingredientManager.spawnIngredients(30);
+
+
+
+        // Spawn ingredients spread over the walkable area
+        ingredientManager.spawnIngredients(INGREDIENT_COUNT);
 
     }
 
@@ -344,6 +348,11 @@ public class GameScreen implements Screen {
             ingredientManager.collectNearbyIngredient(playerPos, 0.3f, PlayerInventory.getInstance());
         }
 
+        // If less than 70% of the ingredients remain, replenish to the original amount.
+        if (ingredientManager.getIngredients().size < INGREDIENT_COUNT * 0.7f) {
+            ingredientManager.resupplyIngredients(INGREDIENT_COUNT);
+        }
+
         for (Enemy npc : npcList) {
             npc.update(delta, playerPos);
         }
@@ -355,6 +364,7 @@ public class GameScreen implements Screen {
                 consortRemovalQueue.add(consort);
             }
         }
+
         royalConsortList.removeAll(consortRemovalQueue);
         consortRemovalQueue.clear();
 

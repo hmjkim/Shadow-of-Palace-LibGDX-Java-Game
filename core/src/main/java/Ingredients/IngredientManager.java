@@ -25,7 +25,7 @@ public class IngredientManager {
     }
 
     public void spawnIngredients(final int count) {
-        ingredients.clear();
+         ingredients.clear();
         // Make a copy of walkable positions and shuffle them
         List<Vector2> positions = new ArrayList<>(walkablePositions);
         Collections.shuffle(positions);
@@ -87,6 +87,54 @@ public class IngredientManager {
                 ingredients.removeIndex(i);
                 return;  // Ingredient collected
             }
+        }
+    }
+
+    // Randomly picks one position of all walkable positions
+    public Vector2 getRandomWalkablePosition() {
+        if (walkablePositions.isEmpty()) {
+            // Fallback if no walkable tile found
+            return new Vector2(0, 0);
+        }
+        int randomIndex = MathUtils.random(walkablePositions.size() - 1);
+        return walkablePositions.get(randomIndex);
+    }
+
+    public void resupplyIngredients(int originalCount) {
+        int missing = originalCount - ingredients.size;
+        // if nothing is collected yet or missing value is negative
+        if (missing <= 0) {
+            return;
+        }
+
+        // Make a copy of walkable positions and shuffle them for unique positions
+        List<Vector2> positions = new ArrayList<>(walkablePositions);
+        Collections.shuffle(positions);
+
+        // Spawn missing ingredients using distinct positions from the shuffled list
+        for (int i = 0; i < missing && i < positions.size(); i++) {
+            Vector2 position = positions.get(i);
+            IngredientType type;
+            TextureAtlas.AtlasRegion region;
+            int rand = MathUtils.random(2);
+            if (rand == 0) {
+                type = IngredientType.WATER;
+                region = ingredientAtlas.findRegion("water");
+            } else if (rand == 1) {
+                type = IngredientType.STONE;
+                region = ingredientAtlas.findRegion("stone");
+            } else {
+                type = IngredientType.HERB;
+                region = ingredientAtlas.findRegion("herb");
+            }
+            Ingredient ingredient = new Ingredient(region, type);
+            ingredient.setOriginCenter();
+            float positionX = position.x - ingredient.getWidth() / 2;
+            float positionY = position.y - ingredient.getHeight() / 2;
+
+            ingredient.setPosition(positionX, positionY);
+            ingredients.add(ingredient);
+            System.out.println("Repopulated " + ingredient.getType() + " at position [" + positionX  + ", " + positionY + "]");
         }
     }
 
