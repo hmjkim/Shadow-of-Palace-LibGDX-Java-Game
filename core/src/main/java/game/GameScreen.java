@@ -265,25 +265,32 @@ public class GameScreen implements Screen {
                 Rectangle rectangle = rectangleObject.getRectangle();
                 // Get the object name (e.g., "Gwi In", "Suk Won", etc.)
                 String objectName = object.getName();
-                for (RoyalConsortType type : RoyalConsortType.values()) {
-                    if (type.getName().equalsIgnoreCase(objectName)) {
+                for (RoyalConsortType consortType : RoyalConsortType.values()) {
+                    if (consortType.getName().equalsIgnoreCase(objectName)) {
+                        // Check if this consort type is less than or equal to the player's current rank
+                        // If so, skip spawning it because that rank is already occupied or "dead"
+                        if (consortType.compareTo(player.getRank()) <= 0) {
+                            // Skip this consort
+                            break;
+                        }
+
                         // First, calculate the center of the rectangle (in pixels) and convert to world units.
                         float centerX = (rectangle.x + rectangle.width / 2f) / MainGame.PIXELS_PER_METER;
                         float centerY = (rectangle.y + rectangle.height / 2f) / MainGame.PIXELS_PER_METER;
 
                         // Create the texture region for the NPC using the front image file path from the enum.
-                        TextureRegion region = new TextureRegion(new Texture(type.getFrontImagePath()));
+                        TextureRegion region = new TextureRegion(new Texture(consortType.getFrontImagePath()));
 
-                        // Calculate the sprite's size in world units (if using the default scaling similar to Enemy).
+                        // Calculate the sprite's size in world units
                         float spriteWidth = region.getRegionWidth() / MainGame.PIXELS_PER_METER;
                         float spriteHeight = region.getRegionHeight() / MainGame.PIXELS_PER_METER;
 
-                        // Calculate the position so that the sprite is centered on the rectangle.
+                        // Calculate the position so that the sprite is centered on the rectangle
                         float finalX = centerX - spriteWidth / 2f;
                         float finalY = centerY - spriteHeight / 2f;
 
-                        // Create the RoyalConsort instance with its type and adjusted position.
-                        RoyalConsort consort = new RoyalConsort(region, type, finalX, finalY);
+                        // Create the RoyalConsort instance with its type and adjusted position
+                        RoyalConsort consort = new RoyalConsort(region, consortType, finalX, finalY);
                         royalConsortList.add(consort);
                         break;
                     }
