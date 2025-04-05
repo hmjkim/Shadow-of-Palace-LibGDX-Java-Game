@@ -170,6 +170,7 @@ public class GameScreen implements Screen {
         this.enemyCount = 3;
         spawnEnemy();
         spawnRoyalConsorts();
+        spawnPlayerBasedOnCurrentRank();
 
         // System Message
         messageQueue = new ArrayList<>();
@@ -418,6 +419,23 @@ public class GameScreen implements Screen {
             }
         }
     }
+
+    private void spawnPlayerBasedOnCurrentRank() {
+        // Retrieve the player's current rank
+        RoyalConsortType currentRank = player.getRank();
+        // Loop through all royal consorts to find the one matching the current rank
+        for (RoyalConsort royalConsort : royalConsortList) {
+            if (royalConsort.getType() == currentRank) {
+                // Calculate the center position of the royal consort
+                float consortCenterX = royalConsort.getX() + royalConsort.getWidth() / 2;
+                float consortCenterY = royalConsort.getY() + royalConsort.getHeight() / 2;
+                // Set the player's Box2D body to that position (keeping its current rotation)
+                player.getBody().setTransform(consortCenterX, consortCenterY, 0);
+                break;
+            }
+        }
+    }
+
 
     /**
      * Handle continuous input by setting the player's velocity directly.
