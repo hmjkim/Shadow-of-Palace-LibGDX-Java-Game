@@ -7,6 +7,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.math.MathUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Enemy extends Sprite {
     private final World world;
     private Body body;
@@ -15,7 +18,7 @@ public class Enemy extends Sprite {
     private static final float CONSTANT_SPEED = 1.0f;
     private boolean isChasing;
     private float chaseTimer;
-    private GameScreen screen;
+    private final GameScreen screen;
     private static final float CHASE_DURATION = 5f;
     private static final float CHASE_INTERVAL = 15f;
 
@@ -66,6 +69,37 @@ public class Enemy extends Sprite {
         return new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle)).nor();
     }
 
+    private Vector2 chooseFreeDirection() {
+        List<Vector2> freeDirections = new ArrayList<>();
+        int numSamples = 4;
+        final float rayDistance = 1.0f;
+        Vector2 start = body.getPosition();
+
+        for (int i = 0; i < numSamples; i++) {
+            float angle = MathUtils.random(360);
+            Vector2 candidate = new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle)).nor();
+
+            Vector2 end = start.cpy().add(candidate.cpy().scl(rayDistance));
+
+            final boolean[] blocked = {false};
+            RayCastCallback callback = (fixture, point, normal, fraction) -> {
+                if (fixture.getBody().getType() == BodyDef.BodyType.StaticBody) {
+                    blocked[0] = true;
+                    return 0;
+                }
+                return 1;
+            };
+            world.rayCast(callback, start, end);
+            if (!blocked[0]) {
+                freeDirections.add(candidate);
+            }
+        }
+        if (!freeDirections.isEmpty()) {
+            return freeDirections.get(MathUtils.random(freeDirections.size() - 1));
+        }
+        return getRandomDirection();
+    }
+
     public void update(float delta, Vector2 playerPosition) {
         if (pendingRespawn) {
             if (playerPosition.dst(spawnPos) >= MIN_RESPAWN_DISTANCE) {
@@ -73,7 +107,7 @@ public class Enemy extends Sprite {
                 pendingRespawn = false;
                 stateTimer = 0f;
                 isChasing = false;
-                scatterDirection = getRandomDirection();
+                scatterDirection = chooseFreeDirection();
             } else {
                 return;
             }
@@ -95,19 +129,19 @@ public class Enemy extends Sprite {
             } else {
                 direction.nor();
             }
-            body.setLinearVelocity(direction.scl(1.0f));
+            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
             if (chaseTimer >= CHASE_DURATION) {
                 isChasing = false;
                 stateTimer = 0f;
-                scatterDirection = getRandomDirection();
+                scatterDirection = chooseFreeDirection();
             }
         } else {
             if (stateTimer >= 3f) {
-                scatterDirection = getRandomDirection();
+                scatterDirection = chooseFreeDirection();
                 stateTimer = 0f;
             }
             direction.set(scatterDirection);
-            body.setLinearVelocity(direction.scl(1.0f));
+            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
         }
 
         setPosition(body.getPosition().x - getWidth() / 2,
