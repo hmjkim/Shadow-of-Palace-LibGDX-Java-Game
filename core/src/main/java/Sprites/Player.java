@@ -1,9 +1,6 @@
 package Sprites;
 
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 import game.GameScreen;
 import game.MainGame;
@@ -30,10 +27,10 @@ public class Player extends Sprite {
 
     // private final Texture texture;
     // Animation
-    private final TextureRegion playerStand;
-    private final Animation<TextureRegion> walkUp;
-    private final Animation<TextureRegion> walkRight;
-    private final Animation<TextureRegion> walkDown;
+    private TextureRegion playerStand;
+    private Animation<TextureRegion> walkUp;
+    private Animation<TextureRegion> walkRight;
+    private Animation<TextureRegion> walkDown;
     private float stateTimer;
     private Direction direction;
 
@@ -46,7 +43,7 @@ public class Player extends Sprite {
      * @param world The Box2D world to which the player's body is added.
      */
     public Player(World world, GameScreen screen) {
-        super(screen.getAtlas().findRegion("gwi_in"));
+        super(screen.getAtlas().findRegion(RoyalConsortType.GWI_IN.getRegionName()));
         this.world = world;
         currentState = State.STANDING;
         rank = RoyalConsortType.GWI_IN;
@@ -155,21 +152,51 @@ public class Player extends Sprite {
         body.setLinearDamping(3f);
     }
 
+    public void updateAppearance(final RoyalConsortType newRank, final TextureAtlas concubineAtlas) {
+        // Update the player's rank
+        setRank(newRank);
+
+        // Retrieve the new texture region from the atlas using the rank's region name
+        TextureAtlas.AtlasRegion newRegion = concubineAtlas.findRegion(newRank.getRegionName());
+        if (newRegion == null) {
+            System.out.println("Player atlas region for " + newRank.getRegionName() + " not found!");
+            return;
+        }
+        // Update the player's sprite region and size
+        setRegion(newRegion);
+
+        // Rebuild the animations based on the new sprite sheet layout
+
+        // Walk Up Animation (row 0)
+        Array<TextureRegion> framesWalkUp = new Array<>();
+        for (int col = 0; col < 3; col++) {
+            framesWalkUp.add(new TextureRegion(newRegion, col * CELL_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT));
+        }
+        walkUp = new Animation<>(0.1f, framesWalkUp, Animation.PlayMode.LOOP);
+
+        // Walk Right Animation (row 1)
+        Array<TextureRegion> framesWalkRight = new Array<>();
+        for (int col = 0; col < 3; col++) {
+            framesWalkRight.add(new TextureRegion(newRegion, col * CELL_WIDTH, CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT));
+        }
+        walkRight = new Animation<>(0.1f, framesWalkRight, Animation.PlayMode.LOOP);
+
+        // Walk Down Animation (row 2)
+        Array<TextureRegion> framesWalkDown = new Array<>();
+        for (int col = 0; col < 3; col++) {
+            framesWalkDown.add(new TextureRegion(newRegion, col * CELL_WIDTH, 2 * CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT));
+        }
+        walkDown = new Animation<>(0.1f, framesWalkDown, Animation.PlayMode.LOOP);
+
+        // Set the idle frame. For instance, using the middle frame of the walking down row
+        playerStand = new TextureRegion(newRegion, FRAME_WIDTH, 2 * CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
+    }
 
     /**
      * Updates the sprite's position to follow its Box2D body.
      *
      * @param delta The time elapsed since the last frame.
      */
-//    public void update(float delta) {
-//        // Center the sprite on the Box2D body's position.
-//        setPosition(
-//            body.getPosition().x - getWidth() / 2,
-//            body.getPosition().y - getHeight() / 2
-//        );
-//        //update sprite with the correct frame depending on players current action
-//        setRegion(getFrame(delta));
-//    }
     public void update(float delta) {
         if (invincible) {
             invincibilityTimer -= delta;
@@ -191,10 +218,10 @@ public class Player extends Sprite {
         }
 
         // Update the sprite's region based on the current frame.
-        setRegion(getFrame(delta));
+        setRegion(getFrame());
     }
 
-    public TextureRegion getFrame(float delta) {
+    public TextureRegion getFrame() {
         // Determine current state
         currentState = getState();
         TextureRegion region;
