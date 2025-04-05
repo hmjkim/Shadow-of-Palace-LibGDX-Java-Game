@@ -1,7 +1,5 @@
 package Ingredients;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
@@ -10,7 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import game.MainGame;
+
 import Sprites.PlayerInventory;
 
 public class IngredientManager {
@@ -62,18 +60,36 @@ public class IngredientManager {
         }
     }
 
-    public void checkPlayerCollision(final Vector2 playerPosition, final PlayerInventory inventory) {
+//    private Ingredient getNearbyIngredient(Vector2 playerPosition, float threshold) {
+//        for (Ingredient ingredient : ingredients) {
+//            // Calculate center of the ingredient
+//            Vector2 center = new Vector2(
+//                ingredient.getX() + ingredient.getWidth() / 2,
+//                ingredient.getY() + ingredient.getHeight() / 2
+//            );
+//            if (center.dst(playerPosition) < threshold) {
+//                return ingredient;
+//            }
+//        }
+//        return null;
+//    }
+
+    public void collectNearbyIngredient(final Vector2 playerPosition, final float threshold, final PlayerInventory inventory) {
         for (int i = ingredients.size - 1; i >= 0; i--) {
             Ingredient ingredient = ingredients.get(i);
-            if (ingredient.getBoundingRectangle().contains(playerPosition)) {
-                // Add the ingredient to the inventory
+            Vector2 center = new Vector2(
+                ingredient.getX() + ingredient.getWidth() / 2,
+                ingredient.getY() + ingredient.getHeight() / 2
+            );
+            if (center.dst(playerPosition) < threshold) {
                 inventory.addIngredient(ingredient.getType());
                 System.out.println("Added " + ingredient.getType() + " to the inventory.");
-                // Remove the ingredient from the manager
                 ingredients.removeIndex(i);
+                return;  // Ingredient collected
             }
         }
     }
+
 
     public Array<Ingredient> getIngredients() {
         return ingredients;

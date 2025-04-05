@@ -339,8 +339,10 @@ public class GameScreen implements Screen {
 
         Vector2 playerPos = player.getBody().getPosition();
 
-        // Check if the player collects any ingredients
-        ingredientManager.checkPlayerCollision(playerPos,  PlayerInventory.getInstance());
+        // Collect a nearby ingredient when SPACE is pressed
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            ingredientManager.collectNearbyIngredient(playerPos, 0.3f, PlayerInventory.getInstance());
+        }
 
         for (Enemy npc : npcList) {
             npc.update(delta, playerPos);
@@ -476,14 +478,16 @@ public class GameScreen implements Screen {
         game.batch.enableBlending();
 
         player.update(delta);
+
         // Draw world objects
         for (RoyalConsort royalConsort : royalConsortList) {
             royalConsort.draw(game.batch);
         }
-        player.draw(game.batch);
         for (Enemy npc : npcList) {
             npc.draw(game.batch);
         }
+        player.draw(game.batch);
+
         // Draw the ingredients
         ingredientManager.render(game.batch);
 
