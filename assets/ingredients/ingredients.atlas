@@ -1,0 +1,9 @@
+ingredients.png
+size:64,16
+repeat:none
+herb
+bounds:12,4,15,11
+stone
+bounds:0,0,12,15
+water
+bounds:27,2,11,13
