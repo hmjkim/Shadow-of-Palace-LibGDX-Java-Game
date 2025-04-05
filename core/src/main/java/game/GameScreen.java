@@ -1,6 +1,7 @@
 package game;
 
 import Helper.FontManager;
+import Ingredients.IngredientManager;
 import Sprites.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -19,6 +20,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -79,7 +81,9 @@ public class GameScreen implements Screen {
     private final List<SystemMessage> messageQueue;
     private BitmapFont messageFont;
 
-
+    // Ingredients
+    private List<Vector2> walkablePositions;
+    private IngredientManager ingredientManager;
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
@@ -168,6 +172,12 @@ public class GameScreen implements Screen {
 
         // System Message
         messageQueue = new ArrayList<>();
+
+        // Ingredients
+        walkablePositions = getWalkablePositions();
+        ingredientManager = new IngredientManager(walkablePositions);
+        // Spawn 10 ingredients spread over the walkable area
+        ingredientManager.spawnIngredients(30);
 
     }
 
@@ -277,6 +287,20 @@ public class GameScreen implements Screen {
         }
     }
 
+    public List<Vector2> getWalkablePositions() {
+        List<Vector2> walkablePositions = new ArrayList<>();
+
+        // Access the "Walkable" object layer in Tiled map
+        MapObjects walkableObjects = map.getLayers().get("Walkable").getObjects();
+        for (RectangleMapObject object : walkableObjects.getByType(RectangleMapObject.class)) {
+            Rectangle rectangle = object.getRectangle();
+            // Calculate the center position of the rectangle and convert to world units
+            float centerX = (rectangle.x + rectangle.width / 2f) / MainGame.PIXELS_PER_METER;
+            float centerY = (rectangle.y + rectangle.height / 2f) / MainGame.PIXELS_PER_METER;
+            walkablePositions.add(new Vector2(centerX, centerY));
+        }
+        return walkablePositions;
+    }
 
     public void nextStage() {
         stage++;
@@ -299,20 +323,6 @@ public class GameScreen implements Screen {
     /**
      * Update game logic: handle input, step physics simulation, update player, and move camera.
      */
-//    public void update(float delta) {
-//        handleInput(delta);
-//        // Step the Box2D world simulation (fixed time step recommended).
-//        world.step(1/60f, 6, 2);
-//        // Update the player's sprite position based on its physics body.
-//        player.update(delta);
-//
-//        // --- Camera Follow ---
-//        // Update the camera's position to follow the player's Box2D body.
-//        camera.position.set(player.getBody().getPosition(), 0);
-//        camera.update();
-//        // Inform the map renderer of the camera's updated view.
-//        mapRenderer.setView(camera);
-//    }
     public void update(float delta) {
         handleInput(delta);
         // Remove expired messages
@@ -328,6 +338,9 @@ public class GameScreen implements Screen {
         player.update(delta);
 
         Vector2 playerPos = player.getBody().getPosition();
+
+        // Check if the player collects any ingredients
+        ingredientManager.checkPlayerCollision(playerPos,  PlayerInventory.getInstance());
 
         for (Enemy npc : npcList) {
             npc.update(delta, playerPos);
@@ -471,6 +484,9 @@ public class GameScreen implements Screen {
         for (Enemy npc : npcList) {
             npc.draw(game.batch);
         }
+        // Draw the ingredients
+        ingredientManager.render(game.batch);
+
         game.batch.end();
 
         // --- UI CAMERA RENDERING ---
