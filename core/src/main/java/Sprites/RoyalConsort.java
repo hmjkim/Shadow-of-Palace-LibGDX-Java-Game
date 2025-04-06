@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import game.MainGame;
+import game.TimeManager;
 
 public class RoyalConsort extends Sprite {
 
@@ -135,7 +136,8 @@ public class RoyalConsort extends Sprite {
         // Reset Y back to prevent position drift
         setY(originalY);
 
-        if (showActionBox && !isDying) {
+        boolean isNight = !TimeManager.getInstance().getIsDayTime();
+        if (showActionBox && !isDying && isNight) {
             float boxWidth = actionBox.getRegionWidth() / MainGame.PIXELS_PER_METER;
             float boxHeight = actionBox.getRegionHeight() / MainGame.PIXELS_PER_METER;
             float boxX = getX() + getWidth() / 2 - boxWidth / 2;
