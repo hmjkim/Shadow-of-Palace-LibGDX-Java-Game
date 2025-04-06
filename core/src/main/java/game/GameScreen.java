@@ -29,10 +29,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * GameScreen sets up the Tiled map, Box2D world, collision objects, player, and camera.
@@ -89,6 +86,12 @@ public class GameScreen implements Screen {
     // Ingredients
     private List<Vector2> walkablePositions;
     private IngredientManager ingredientManager;
+
+    //Target Royal Consort
+    private List<RoyalConsortType> killOrder;
+    private int currentTargetIndex;
+    private Map<RoyalConsortType, Texture> targetIcons;
+
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
@@ -185,7 +188,18 @@ public class GameScreen implements Screen {
         walkablePositions = getWalkablePositions();
         ingredientManager = new IngredientManager(walkablePositions);
 
+        this.currentTargetIndex = 0;
+        killOrder = new ArrayList<>();
+        killOrder.add(RoyalConsortType.SUK_WON);
+        killOrder.add(RoyalConsortType.SUK_BIN);
+        killOrder.add(RoyalConsortType.BIN);
+        killOrder.add(RoyalConsortType.QUEEN);
 
+        targetIcons = new HashMap<>();
+        targetIcons.put(RoyalConsortType.SUK_WON, new Texture("target/target-sukwon.png"));
+        targetIcons.put(RoyalConsortType.SUK_BIN, new Texture("target/target-sukbin.png"));
+        targetIcons.put(RoyalConsortType.BIN,    new Texture("target/target-bin.png"));
+        targetIcons.put(RoyalConsortType.QUEEN, new Texture("target/target-queen.png"));
 
         // Spawn ingredients spread over the walkable area
         ingredientManager.spawnIngredients(INGREDIENT_COUNT);
@@ -194,6 +208,13 @@ public class GameScreen implements Screen {
 
     public void showMessage(String text, Color color) {
         messageQueue.add(new SystemMessage(text, color));
+    }
+
+    private RoyalConsortType getCurrentTarget() {
+        if (currentTargetIndex < killOrder.size()) {
+            return killOrder.get(currentTargetIndex);
+        }
+        return null;
     }
 
     private void handleItemUsageInput() {
@@ -471,14 +492,24 @@ public class GameScreen implements Screen {
                 PlayerInventory.getInstance().removePoisonItem();
                 System.out.println("Poison item used");
 
+                RoyalConsortType currentTarget = getCurrentTarget();
+
                 for (RoyalConsort consort : royalConsortList) {
                     if (consort.shouldShowActionText() && consort.isAlive()) {
-                        consort.isPoisoned(); // Mark them poisoned
-                        MysteryBox.getInstance().updateRecipe();
-                        // inherit the new rank and change appearance
-                        player.updateAppearance(consort.getType(), getAtlas());
-                        System.out.println("Poisoned " + consort.getType().getName());
-                        showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
+                        if (consort.getType() == currentTarget) {
+                            consort.isPoisoned(); // Mark them poisoned
+                            currentTargetIndex++;
+                            MysteryBox.getInstance().updateRecipe();
+
+                            // inherit the new rank and change appearance
+                            player.updateAppearance(consort.getType(), getAtlas());
+                            System.out.println("Poisoned " + consort.getType().getName());
+                            showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
+                        } else {
+                            System.out.println("Wrong target! Lose 1 heart.");
+                            showMessage("You tried to kill the wrong concubine! -1 heart", Color.RED);
+                            PlayerHealth.getInstance().takeDamage(1);
+                        }
                         break; // Only poison one at a time
                     }
                 }
@@ -687,6 +718,17 @@ public class GameScreen implements Screen {
             messageFont.setColor(original); // Reset
         }
 
+        RoyalConsortType currentTarget = getCurrentTarget();
+        if (currentTarget != null) {
+            Texture icon = targetIcons.get(currentTarget);
+            float iconWidth = 200;
+            float iconHeight = 200;
+            float iconX = Gdx.graphics.getWidth() - iconWidth - 20;
+            float iconY = Gdx.graphics.getHeight() - iconHeight - 10;
+
+            game.batch.draw(icon, iconX, iconY, iconWidth, iconHeight);
+        }
+
         game.batch.end();
 
         // Night overlay
@@ -749,6 +791,10 @@ public class GameScreen implements Screen {
         world.dispose();
         debugRenderer.dispose();
         shapeRenderer.dispose();
+
+        for (Texture tex : targetIcons.values()) {
+            tex.dispose();
+        }
 //        player.dispose();
     }
 }
