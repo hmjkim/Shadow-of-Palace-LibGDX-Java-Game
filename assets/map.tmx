@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="90" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="31" nextobjectid="569">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="90" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="32" nextobjectid="570">
  <tileset firstgid="1" name="TilesetWater" tilewidth="16" tileheight="16" tilecount="476" columns="28">
   <image source="tiles/TilesetWater.png" width="448" height="272"/>
  </tileset>
@@ -1113,6 +1113,9 @@
   <object id="463" name="npc2" x="688" y="432" width="15" height="17"/>
   <object id="464" name="npc5" x="993" y="160" width="15" height="16"/>
   <object id="465" name="npc1" x="209" y="238" width="15" height="18"/>
+ </objectgroup>
+ <objectgroup id="31" name="kitchen">
+  <object id="569" x="1057" y="641" width="15" height="16"/>
  </objectgroup>
  <objectgroup id="30" name="Walkable">
   <object id="469" x="112" y="144" width="496" height="16"/>
