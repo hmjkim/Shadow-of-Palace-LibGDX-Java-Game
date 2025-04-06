@@ -42,7 +42,7 @@ public class MainGame extends Game {
         health = PlayerHealth.getInstance();
         batch = new SpriteBatch();
         // Set the initial screen (GameScreen uses Box2D, Tiled map, etc.)
-        setScreen(new GameScreen(this));
+        setScreen(new MainMenuScreen(this));
     }
 
     /**

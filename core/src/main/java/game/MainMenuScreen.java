@@ -1,0 +1,93 @@
+package game;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
+public class MainMenuScreen implements Screen {
+    private final MainGame game;
+    private Stage stage;
+    private Skin skin;
+
+    public MainMenuScreen(MainGame game) {
+        this.game = game;
+        stage = new Stage();
+
+        Gdx.input.setInputProcessor(stage);
+
+        // Load a default skin
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+        Table table = new Table();
+        table.setFillParent(true);
+        stage.addActor(table);
+
+        // Create "Start" and "Exit" buttons
+        TextButton startButton = new TextButton("Start", skin);
+        TextButton exitButton = new TextButton("Exit", skin);
+
+        // Add listeners to the buttons
+        startButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Switch to the game screen when "Start" is clicked
+                game.setScreen(new GameScreen(game));
+            }
+        });
+
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Exit the application when "Exit" is clicked
+                Gdx.app.exit();
+            }
+        });
+
+        // Add buttons to the table with some padding
+        table.add(startButton).pad(10);
+        table.row();
+        table.add(exitButton).pad(10);
+    }
+
+    @Override
+    public void show() {
+    }
+
+    @Override
+    public void render(float delta) {
+        // Clear the screen
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Update and draw the stage
+        stage.act(delta);
+        stage.draw();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        // Update the viewport when the screen size changes
+        stage.getViewport().update(width, height, true);
+    }
+
+    @Override
+    public void pause() {  }
+
+    @Override
+    public void resume() {  }
+
+    @Override
+    public void hide() {  }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
+        skin.dispose();
+    }
+}
