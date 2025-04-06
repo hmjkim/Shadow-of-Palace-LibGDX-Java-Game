@@ -327,8 +327,32 @@ public class GameScreen implements Screen {
             float centerY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
             Vector2 spawnPos = new Vector2(centerX, centerY);
 
-            String enemyRegionName = "enemy2";
-            npcList.add(new Enemy(world, this, enemyAtlas, spawnPos, enemyRegionName));
+            final int enemyTotalTypes = 4;
+            Random random = new Random();
+            int enemyType = random.nextInt(enemyTotalTypes) + 1; // min 1 to max enemy total types
+            String enemyRegionName = "enemy" + enemyType;
+            System.out.println(enemyRegionName);
+            FrameRegionDimensions dimensions;
+            switch(enemyType) {
+                case 1:
+                    dimensions = new FrameRegionDimensions(20, 30);
+                    break;
+                case 2:
+                    dimensions = new FrameRegionDimensions(17, 30);
+                    break;
+                case 3:
+                    dimensions = new FrameRegionDimensions(21, 31);
+                    break;
+                case 4:
+                    dimensions = new FrameRegionDimensions(24, 32);
+                    break;
+                default:
+                    // Provide a default value
+                    dimensions = new FrameRegionDimensions(20, 30);
+                    break;
+            }
+
+            npcList.add(new Enemy(world, this, enemyAtlas, spawnPos, enemyRegionName, dimensions));
         }
     }
 
