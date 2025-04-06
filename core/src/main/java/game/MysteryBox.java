@@ -40,6 +40,18 @@ public class MysteryBox {
         }
     }
 
+    public int getWaterRequired() {
+        return waterRequired;
+    }
+
+    public int getLeafRequired() {
+        return leafRequired;
+    }
+
+    public int getRockRequired() {
+        return rockRequired;
+    }
+
     public void updateRecipe() {
         this.waterRequired++;
         this.leafRequired++;
