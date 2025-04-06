@@ -15,16 +15,14 @@ import game.TimeManager;
 public class Player extends Sprite {
     private RoyalConsortType rank;
 
-    // Constants for your sprite sheet grid.
-    private static final int CELL_WIDTH = 16 + 8;    // 24 pixels per cell in width
-    private static final int CELL_HEIGHT = 24 + 8;   // 32 pixels per cell in height
-    private static final int FRAME_WIDTH = 16;       // Actual graphic width
-    private static final int FRAME_HEIGHT = 24;      // Actual graphic height
+    // Constants for your sprite sheet grid
+    private static final int CELL_WIDTH = 25; // 25 pixels per cell in width
+    private static final int CELL_HEIGHT = 30; // 30 pixels per cell in height
 
     private State currentState;
     private final World world;
     private Body body;
-
+    private final GameScreen screen;
     // private final Texture texture;
     // Animation
     private TextureRegion playerStand;
@@ -45,6 +43,7 @@ public class Player extends Sprite {
     public Player(World world, GameScreen screen) {
         super(screen.getAtlas().findRegion(RoyalConsortType.GWI_IN.getRegionName()));
         this.world = world;
+        this.screen = screen;
         currentState = State.STANDING;
         rank = RoyalConsortType.GWI_IN;
         stateTimer = 0;
@@ -63,29 +62,9 @@ public class Player extends Sprite {
         // --- Create the Player's Physics Body ---
         definePlayer();
 
-        Array<TextureRegion> framesUp = new Array<TextureRegion>();
-        for (int col = 0; col < 3; col++) {
-            framesUp.add(getSpriteFrame(0, col));  // row 0 for up
-        }
-        walkUp = new Animation<>(0.1f, framesUp, Animation.PlayMode.LOOP);
+        // Setup spritesheet
+        updateAppearance(RoyalConsortType.GWI_IN, screen.getAtlas());
 
-        Array<TextureRegion> framesRight = new Array<TextureRegion>();
-        for (int col = 0; col < 3; col++) {
-            framesRight.add(getSpriteFrame(1, col));  // row 1 for right
-        }
-        walkRight = new Animation<>(0.1f, framesRight, Animation.PlayMode.LOOP);
-
-        Array<TextureRegion> framesDown = new Array<TextureRegion>();
-        for (int col = 0; col < 3; col++) {
-            framesDown.add(getSpriteFrame(2, col));  // row 2 for down
-        }
-        walkDown = new Animation<>(0.1f, framesDown, Animation.PlayMode.LOOP);
-        // Use the second frame of the down row (row 2, col 1) as the standing frame.
-        playerStand = getSpriteFrame(2, 1);
-
-        // --- Set Sprite Bounds ---
-        setBounds(CELL_WIDTH, (CELL_HEIGHT) * 2, FRAME_WIDTH / MainGame.PIXELS_PER_METER, FRAME_HEIGHT / MainGame.PIXELS_PER_METER);
-        setRegion(playerStand);
     }
 
     public RoyalConsortType getRank() {
@@ -96,15 +75,22 @@ public class Player extends Sprite {
         this.rank = rank;
     }
 
-    /**
-     * Returns a TextureRegion for the frame at the given grid position.
-     * Rows and columns are zero-indexed.
-     * For example, row 0 is the first row (player moving up), row 1 is moving right, row 2 is moving down.
-     */
-    private TextureRegion getSpriteFrame(int row, int col) {
-        int x = col * CELL_WIDTH;
-        int y = row * CELL_HEIGHT;
-        return new TextureRegion(getTexture(), x, y, FRAME_WIDTH, FRAME_HEIGHT);
+
+    private TextureRegion getSpriteFrame(final int row, final int col, final FrameRegionDimensions dimensions) {
+
+        // Get the base region of the current character
+        TextureRegion baseRegion = screen.getAtlas().findRegion(rank.getRegionName());
+
+        int baseX = baseRegion.getRegionX();
+        int baseY = baseRegion.getRegionY();
+
+        int frameWidth = dimensions.getFrameWidth();
+        int frameHeight = dimensions.getFrameHeight();
+
+        int x = baseX + col * CELL_WIDTH;
+        int y = baseY + row * CELL_HEIGHT;
+
+        return new TextureRegion(baseRegion.getTexture(), x, y, frameWidth, frameHeight);
     }
 
     public void setInvincible(float time) {
@@ -153,44 +139,40 @@ public class Player extends Sprite {
     }
 
     public void updateAppearance(final RoyalConsortType newRank, final TextureAtlas concubineAtlas) {
-        // Update the player's rank
         setRank(newRank);
 
-        // Retrieve the new texture region from the atlas using the rank's region name
-        TextureAtlas.AtlasRegion newRegion = concubineAtlas.findRegion(newRank.getRegionName());
-        if (newRegion == null) {
+        // Get the base region for the new rank
+        TextureRegion newBase = concubineAtlas.findRegion(newRank.getRegionName());
+        setRegion(newBase); // fallback if animations fail
+
+        if (newBase == null) {
             System.out.println("Player atlas region for " + newRank.getRegionName() + " not found!");
             return;
         }
-        // Update the player's sprite region and size
-        setRegion(newRegion);
+        // Set the new animations
+        FrameRegionDimensions[] dimensions = newRank.getFrameDimensions();
 
-        // Rebuild the animations based on the new sprite sheet layout
-
-        // Walk Up Animation (row 0)
         Array<TextureRegion> framesWalkUp = new Array<>();
+        Array<TextureRegion> framesRight = new Array<>();
+        Array<TextureRegion> framesDown = new Array<>();
+
         for (int col = 0; col < 3; col++) {
-            framesWalkUp.add(new TextureRegion(newRegion, col * CELL_WIDTH, 0, FRAME_WIDTH, FRAME_HEIGHT));
+            framesWalkUp.add(getSpriteFrame(0, col, dimensions[0]));
+            framesRight.add(getSpriteFrame(1, col, dimensions[1]));
+            framesDown.add(getSpriteFrame(2, col, dimensions[2]));
         }
+
         walkUp = new Animation<>(0.1f, framesWalkUp, Animation.PlayMode.LOOP);
+        walkRight = new Animation<>(0.1f, framesRight, Animation.PlayMode.LOOP);
+        walkDown = new Animation<>(0.1f, framesDown, Animation.PlayMode.LOOP);
+        playerStand = getSpriteFrame(2, 1, dimensions[2]);
 
-        // Walk Right Animation (row 1)
-        Array<TextureRegion> framesWalkRight = new Array<>();
-        for (int col = 0; col < 3; col++) {
-            framesWalkRight.add(new TextureRegion(newRegion, col * CELL_WIDTH, CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT));
-        }
-        walkRight = new Animation<>(0.1f, framesWalkRight, Animation.PlayMode.LOOP);
-
-        // Walk Down Animation (row 2)
-        Array<TextureRegion> framesWalkDown = new Array<>();
-        for (int col = 0; col < 3; col++) {
-            framesWalkDown.add(new TextureRegion(newRegion, col * CELL_WIDTH, 2 * CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT));
-        }
-        walkDown = new Animation<>(0.1f, framesWalkDown, Animation.PlayMode.LOOP);
-
-        // Set the idle frame. For instance, using the middle frame of the walking down row
-        playerStand = new TextureRegion(newRegion, FRAME_WIDTH, 2 * CELL_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT);
+        // Update sprite size
+        setBounds(0, 0,
+            dimensions[2].getFrameWidth() / MainGame.PIXELS_PER_METER,
+            dimensions[2].getFrameHeight() / MainGame.PIXELS_PER_METER);
     }
+
 
     /**
      * Updates the sprite's position to follow its Box2D body.

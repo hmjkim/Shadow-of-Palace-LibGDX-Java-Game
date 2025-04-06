@@ -88,7 +88,7 @@ public class GameScreen implements Screen {
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
-        atlas = new TextureAtlas("spritesheet/royalconsorts.atlas");
+        atlas = new TextureAtlas("royalconsorts/royalconsorts.atlas");
         this.game = mainGame;
         // Load the TMX map from the "assets" folder.
         map = new TmxMapLoader().load("map.tmx");
@@ -417,8 +417,8 @@ public class GameScreen implements Screen {
                 for (RoyalConsort consort : royalConsortList) {
                     if (consort.shouldShowActionText() && consort.isAlive()) {
                         consort.isPoisoned(); // Mark them poisoned
-                        // inherit the new rank
-                        player.updateAppearance(consort.getType(), atlas);
+                        // inherit the new rank and change appearance
+                        player.updateAppearance(consort.getType(), getAtlas());
                         System.out.println("Poisoned " + consort.getType().getName());
                         showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
                         break; // Only poison one at a time
