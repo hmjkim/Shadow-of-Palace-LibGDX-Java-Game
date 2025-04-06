@@ -181,7 +181,6 @@ public class GameScreen implements Screen {
         spawnRoyalConsorts();
         spawnPlayerBasedOnCurrentRank();
 
-        this.showMysteryBoxPrompt = false;
         markKitchen();
 
         // System Message
@@ -508,6 +507,7 @@ public class GameScreen implements Screen {
                             consort.isPoisoned(); // Mark them poisoned
                             currentTargetIndex++;
                             MysteryBox.getInstance().updateRecipe();
+                            nextStage();
 
                             // inherit the new rank and change appearance
                             player.updateAppearance(consort.getType(), getAtlas());
