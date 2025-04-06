@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import Sprites.PlayerInventory;
+import game.TimeManager;
 
 public class IngredientManager {
     private final Array<Ingredient> ingredients;
@@ -90,6 +91,10 @@ public class IngredientManager {
 
     // Renders all ingredients
     public void render(final SpriteBatch batch) {
+        // Only render ingredients if it's day time
+        if (!TimeManager.getInstance().getIsDayTime()) {
+            return;
+        }
         for (Ingredient ingredient : ingredients) {
             ingredient.draw(batch);
         }
