@@ -179,9 +179,10 @@ public class GameScreen implements Screen {
         this.enemyCount = 3;
         spawnEnemy();
         spawnRoyalConsorts();
+        spawnPlayerBasedOnCurrentRank();
+
         this.showMysteryBoxPrompt = false;
         markKitchen();
-        spawnPlayerBasedOnCurrentRank();
 
         // System Message
         messageQueue = new ArrayList<>();
@@ -548,21 +549,42 @@ public class GameScreen implements Screen {
     }
 
     private void spawnPlayerBasedOnCurrentRank() {
-        // Retrieve the player's current rank
         RoyalConsortType currentRank = player.getRank();
-        // Loop through all royal consorts to find the one matching the current rank
-        for (RoyalConsort royalConsort : royalConsortList) {
-            if (royalConsort.getType() == currentRank) {
-                // Calculate the center position of the royal consort
-                float consortCenterX = royalConsort.getX() + royalConsort.getWidth() / 2;
-                float consortCenterY = royalConsort.getY() + royalConsort.getHeight() / 2;
-                // Set the player's Box2D body to that position (keeping its current rotation)
-                player.getBody().setTransform(consortCenterX, consortCenterY, 0);
-                break;
+        boolean found = false;
+        final RoyalConsortType intialRank = RoyalConsortType.GWI_IN;
+
+        // For ranks other than Gwi In, search the existing consort list
+        if (currentRank != intialRank) {
+            for (RoyalConsort royalConsort : royalConsortList) {
+                if (royalConsort.getType() == currentRank) {
+                    float consortCenterX = royalConsort.getX() + royalConsort.getWidth() / 2;
+                    float consortCenterY = royalConsort.getY() + royalConsort.getHeight() / 2;
+                    player.getBody().setTransform(consortCenterX, consortCenterY, 0);
+                    found = true;
+                    break;
+                }
+            }
+        } else {
+            // For Gwi In, retrieve the tile directly from the map
+            MapObjects consortObjects = map.getLayers().get("RoyalConsorts").getObjects();
+            for (MapObject object : consortObjects.getByType(RectangleMapObject.class)) {
+                if (intialRank.getName().equalsIgnoreCase(object.getName())) {
+                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                    float spawnX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
+                    float spawnY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
+                    player.getBody().setTransform(spawnX, spawnY, 0);
+                    found = true;
+                    break;
+                }
             }
         }
-    }
 
+        if (!found) {
+            System.out.println("Spawn point not found for " + currentRank.getName());
+        } else {
+            System.out.println("Spawning player based on current rank: " + currentRank.getName());
+        }
+    }
 
     /**
      * Handle continuous input by setting the player's velocity directly.
@@ -794,6 +816,7 @@ public class GameScreen implements Screen {
 
 
     }
+
     @Override public void hide() {
     }
 
