@@ -55,28 +55,28 @@ public class GameScreen implements Screen {
     // Player object that contains its own Box2D dynamic body and image.
     private final Player player;
 
-    private OrthographicCamera uiCamera;
+    private final OrthographicCamera uiCamera;
 
     // Box2D world and debug renderer for physics simulation.
-    private World world;
-    private Box2DDebugRenderer debugRenderer;
+    private final World world;
+    private final Box2DDebugRenderer debugRenderer;
     private GameScreen screen;
 
     private TimeManager timeManager;
-    private ShapeRenderer shapeRenderer;
+    private final ShapeRenderer shapeRenderer;
 
     private int stage;
     private final List<Enemy> npcList;
-    private List<Enemy> enemyRemovalQueue;
+    private final List<Enemy> enemyRemovalQueue;
     private int enemyCount;
 
-    // kitchen
-    private Rectangle kitchenZone;
-    private boolean showMysteryBoxPrompt;
-
     // Royal Consorts
-    private List<RoyalConsort> royalConsortList;
+    private final List<RoyalConsort> royalConsortList;
     private final List<RoyalConsort> consortRemovalQueue;
+
+    // Kitchen
+    private Kitchen kitchen;
+    private Rectangle kitchenZone;
 
     // Fonts and Text
     private final GlyphLayout layout;
@@ -86,12 +86,12 @@ public class GameScreen implements Screen {
 
     // Ingredients
     private List<Vector2> walkablePositions;
-    private IngredientManager ingredientManager;
+    private final IngredientManager ingredientManager;
 
     //Target Royal Consort
-    private List<RoyalConsortType> killOrder;
+    private final List<RoyalConsortType> killOrder;
     private int currentTargetIndex;
-    private Map<RoyalConsortType, Texture> targetIcons;
+    private final Map<RoyalConsortType, Texture> targetIcons;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -179,7 +179,6 @@ public class GameScreen implements Screen {
         this.enemyCount = 3;
         spawnEnemy();
         spawnRoyalConsorts();
-        this.showMysteryBoxPrompt = false;
         markKitchen();
         spawnPlayerBasedOnCurrentRank();
 
@@ -206,6 +205,10 @@ public class GameScreen implements Screen {
         // Spawn ingredients spread over the walkable area
         ingredientManager.spawnIngredients(INGREDIENT_COUNT);
 
+        if (kitchenZone != null) {
+            kitchen = new Kitchen(kitchenZone, this);
+        }
+
     }
 
     public void showMessage(String text, Color color) {
@@ -217,6 +220,23 @@ public class GameScreen implements Screen {
             return killOrder.get(currentTargetIndex);
         }
         return null;
+    }
+
+    private void markKitchen() {
+        if (map.getLayers().get("kitchen") != null) {
+            MapObjects kitchenObjects = map.getLayers().get("kitchen").getObjects();
+            if (!kitchenObjects.getByType(RectangleMapObject.class).isEmpty()) {
+                RectangleMapObject kitchenObj = (RectangleMapObject) kitchenObjects
+                    .getByType(RectangleMapObject.class).first();
+                Rectangle rect = kitchenObj.getRectangle();
+                kitchenZone = new Rectangle(
+                    rect.x / MainGame.PIXELS_PER_METER,
+                    rect.y / MainGame.PIXELS_PER_METER,
+                    rect.width / MainGame.PIXELS_PER_METER,
+                    rect.height / MainGame.PIXELS_PER_METER
+                );
+            }
+        }
     }
 
     private void handleItemUsageInput() {
@@ -239,32 +259,10 @@ public class GameScreen implements Screen {
             }
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            MysteryBoxOutcome outcome = MysteryBox.getInstance().craft(PlayerInventory.getInstance());
-            if (outcome != null) {
-                switch (outcome) {
-                    case FAILURE:
-                        System.out.println("You got nothing");
-                        showMessage("You got nothing", Color.RED);
-                        break;
-                    case POISON:
-                        System.out.println("You got a Poison item!");
-                        showMessage("You got a Poison item!", Color.WHITE);
-                        PlayerInventory.getInstance().addPoison();
-                        break;
-                    case INVINCIBILITY:
-                        System.out.println("You got a Invincibility item!");
-                        showMessage("You got a Invincibility item!", Color.WHITE);
-                        PlayerInventory.getInstance().addInvincibility();
-                        break;
-                    case HEART_RECOVERY:
-                        System.out.println("You got a Heart Recovery item!");
-                        showMessage("You got a Heart Recovery item!", Color.WHITE);
-                        PlayerInventory.getInstance().addHeartRecovery();
-                        break;
-                }
-            } else {
-                System.out.println("Not enough ingredients!");
-                showMessage("Not enough ingredients!", Color.RED);
+            Vector2 playerPos = player.getBody().getPosition();
+            boolean isInsideKitchen = kitchen.contains(playerPos.x, playerPos.y);
+            if (isInsideKitchen && !TimeManager.getInstance().getIsDayTime()) {
+                kitchen.handleCraft();
             }
         }
     }
@@ -272,22 +270,6 @@ public class GameScreen implements Screen {
     public void scheduleEnemyRemoval(Enemy enemy) {
         if (!enemyRemovalQueue.contains(enemy)) {
             enemyRemovalQueue.add(enemy);
-        }
-    }
-
-    private void markKitchen() {
-        if (map.getLayers().get("kitchen") != null) {
-            MapObjects kitchenObjects = map.getLayers().get("kitchen").getObjects();
-            if (!kitchenObjects.getByType(RectangleMapObject.class).isEmpty()) {
-                RectangleMapObject kitchenObj = (RectangleMapObject) kitchenObjects.getByType(RectangleMapObject.class).first();
-                Rectangle rect = kitchenObj.getRectangle();
-                kitchenZone = new Rectangle(
-                    rect.x / MainGame.PIXELS_PER_METER,
-                    rect.y / MainGame.PIXELS_PER_METER,
-                    rect.width / MainGame.PIXELS_PER_METER,
-                    rect.height / MainGame.PIXELS_PER_METER
-                );
-            }
         }
     }
 
@@ -390,7 +372,7 @@ public class GameScreen implements Screen {
     }
 
     public void nextStage() {
-        stage++;
+        this.stage++;
         enemyCount++;
         spawnEnemy();
     }
@@ -438,12 +420,6 @@ public class GameScreen implements Screen {
 
         for (Enemy npc : npcList) {
             npc.update(delta, playerPos);
-        }
-
-        if (kitchenZone != null && kitchenZone.contains(playerPos)) {
-            showMysteryBoxPrompt = true;
-        } else {
-            showMysteryBoxPrompt = false;
         }
 
         for (RoyalConsort consort : royalConsortList) {
@@ -650,47 +626,40 @@ public class GameScreen implements Screen {
             }
         }
 
-        //Show up Mystery Box message
-        if (showMysteryBoxPrompt) {
-            float centerX = kitchenZone.x + kitchenZone.width / 2f;
-            float centerY = kitchenZone.y + kitchenZone.height / 2f;
-            Vector2 zoneCenter = new Vector2(centerX, centerY);
-            Vector2 screenPos = worldToScreenCoordinates(zoneCenter);
-
-            float bubbleWidth = RoyalConsort.getActionBoxRegion().getRegionWidth() / MainGame.PIXELS_PER_METER;
-            float bubbleHeight = RoyalConsort.getActionBoxRegion().getRegionHeight() / MainGame.PIXELS_PER_METER;
-            float bubbleX = screenPos.x - bubbleWidth / 2f;
-            float bubbleY = screenPos.y + 50;
-
-            game.batch.draw(RoyalConsort.getActionBoxRegion(), bubbleX, bubbleY, bubbleWidth, bubbleHeight);
-
-            MysteryBox mysteryBox = MysteryBox.getInstance();
-            boolean hasAllIngredients = PlayerInventory.getInstance().hasEnough(
-                mysteryBox.getWaterRequired(),
-                mysteryBox.getLeafRequired(),
-                mysteryBox.getRockRequired()
-            );
-            String prompt;
-            Color promptColor;
-            if (TimeManager.getInstance().getIsDayTime()) {
-                prompt = "Mystery Box crafting is only available at night";
-                promptColor = Color.RED;
-            } else {
-                if (hasAllIngredients) {
-                    prompt = "Press [M] to Craft Mystery Box";
-                    promptColor = Color.WHITE;
+        MysteryBox mysteryBox = MysteryBox.getInstance();
+        boolean hasAllIngredients = PlayerInventory.getInstance().hasEnough(
+            mysteryBox.getWaterRequired(),
+            mysteryBox.getLeafRequired(),
+            mysteryBox.getRockRequired()
+        );
+        float plusHeightLength = 0f;
+        float plusWidthLength = 0f;
+        if (kitchen != null) {
+            Vector2 playerPos = player.getBody().getPosition();
+            boolean isInKitchen = kitchen.contains(playerPos.x, playerPos.y);
+            kitchen.setShowText(isInKitchen);
+            final String recipeText = "              Recipe\n";
+            final String requiredIngredient = String.format("water: %d, Rock: %d, Leaf: %d",
+                MysteryBox.getInstance().getWaterRequired(), MysteryBox.getInstance().getRockRequired(),
+                MysteryBox.getInstance().getLeafRequired());
+            if (isInKitchen) {
+                if (TimeManager.getInstance().getIsDayTime()) {
+                    kitchen.setMessage("Only available at night");
                 } else {
-                    prompt = "Not enough ingredients!";
-                    promptColor = Color.RED;
+                    if (hasAllIngredients) {
+                        kitchen.setMessage("      " + recipeText + "       " + requiredIngredient +
+                            "\n\n<Press [M] to Craft Mystery Box>");
+                        plusWidthLength = 55f;
+                    } else {
+                        kitchen.setMessage(recipeText + "  " + requiredIngredient + "\n\n<Not enough ingredients!>");
+                    }
+                    plusHeightLength = 100f;
                 }
+            } else {
+                kitchen.setMessage("");
             }
 
-            layout.setText(actionBoxFont, prompt);
-            float textX = bubbleX + (bubbleWidth - layout.width) / 2f;
-            float textY = bubbleY + (bubbleHeight + layout.height) / 2f;
-            actionBoxFont.setColor(promptColor);
-            actionBoxFont.draw(game.batch, layout, textX, textY);
-            actionBoxFont.setColor(Color.WHITE);
+            kitchen.draw(game.batch, camera, actionBoxFont, layout, plusHeightLength, plusWidthLength);
         }
 
         // Rank HUD
