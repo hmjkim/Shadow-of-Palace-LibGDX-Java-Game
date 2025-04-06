@@ -1,5 +1,6 @@
 package Sprites;
 
+import Ingredients.IngredientType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,7 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  */
 public class PlayerInventory {
     private int waterCount;
-    private int leafCount;
+    private int herbCount;
     private int rockCount;
 
     private int poisonItemCount;
@@ -27,9 +28,9 @@ public class PlayerInventory {
 
     private PlayerInventory() {
         this.waterCount = 0;
-        this.leafCount = 0;
+        this.herbCount = 0;
         this.rockCount = 0;
-        this.poisonItemCount = 0;
+        this.poisonItemCount = 100;
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
 
@@ -74,8 +75,8 @@ public class PlayerInventory {
         this.waterCount++;
     }
 
-    public void addLeaf() {
-        this.leafCount++;
+    public void addHerb() {
+        this.herbCount++;
     }
 
     public void addRock() {
@@ -94,16 +95,15 @@ public class PlayerInventory {
         this.heartRecoveryItemCount++;
     }
 
-    public boolean hasEnough(int waterReq, int leafReq, int rockReq) {
-        return waterCount >= waterReq && leafCount >= leafReq && rockCount >= rockReq;
+    public boolean hasEnough(int waterReq, int herbReq, int rockReq) {
+        return waterCount >= waterReq && herbCount >= herbReq && rockCount >= rockReq;
     }
 
-    public void removeIngredients(int waterReq, int leafReq, int rockReq) {
+    public void removeIngredients(int waterReq, int herbReq, int rockReq) {
         this.waterCount -= waterReq;
-        this.leafCount -= leafReq;
+        this.herbCount -= herbReq;
         this.rockCount -= rockReq;
     }
-
     public void drawInventory(SpriteBatch batch, int screenWidth) {
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
         float y = 20;
@@ -111,12 +111,26 @@ public class PlayerInventory {
         batch.draw(playerInventory, x, y);
 
         font.draw(batch, "Water: " + waterCount, x + 25, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Leaf: " + leafCount, x + 130, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Leaf: " + herbCount, x + 130, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Rock: " + rockCount, x + 225, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Poison: " + poisonItemCount, x + 318, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Hide: " + invincibilityItemCount, x + 423, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 516, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Box: " + heartRecoveryItemCount, x + 620, y + playerInventory.getHeight() - 70);
+    }
+
+    public void addIngredient(final IngredientType type) {
+        switch (type) {
+            case WATER:
+                addWater();
+                break;
+            case STONE:
+                addRock();
+                break;
+            case HERB:
+                addHerb();
+                break;
+        }
     }
 
     public void dispose() {
