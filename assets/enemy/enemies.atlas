@@ -1,5 +1,11 @@
 enemies.png
-size:64,128
+size:256,128
 repeat:none
+enemy1
+bounds:135,6,60,90
 enemy2
-bounds:0,0,51,91
+bounds:195,5,51,91
+enemy3
+bounds:72,3,63,93
+enemy4
+bounds:0,0,72,96
