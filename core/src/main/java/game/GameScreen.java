@@ -491,6 +491,9 @@ public class GameScreen implements Screen {
 
     private void handlePoisonInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {
+            if (TimeManager.getInstance().getIsDayTime()) {
+                return;
+            }
             if (PlayerInventory.getInstance().getPoisonItemCount() >= 1) {
                 PlayerInventory.getInstance().removePoisonItem();
                 System.out.println("Poison item used");
@@ -631,8 +634,9 @@ public class GameScreen implements Screen {
 
 
         // Action Box Poison Message
+        boolean isNight = !TimeManager.getInstance().getIsDayTime();
         for (RoyalConsort consort : royalConsortList) {
-            if (consort.shouldShowActionText()) {
+            if (consort.shouldShowActionText() && isNight) {
                 Vector2 screenCenter = worldToScreenCoordinates(consort.getActionBoxCenterWorldPosition());
 
                 String actionText = "Press [X] to Poison";
