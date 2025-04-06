@@ -53,6 +53,7 @@ public class GameScreen implements Screen {
     private BitmapFont font;
 
     private TextureAtlas atlas;
+    private TextureAtlas enemyAtlas;
 
     // Player object that contains its own Box2D dynamic body and image.
     private final Player player;
@@ -93,6 +94,7 @@ public class GameScreen implements Screen {
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(MainGame mainGame) {
         atlas = new TextureAtlas("royalconsorts/royalconsorts.atlas");
+        enemyAtlas = new TextureAtlas("enemy/enemies.atlas");
         this.game = mainGame;
         // Load the TMX map from the "assets" folder.
         map = new TmxMapLoader().load("map.tmx");
@@ -303,8 +305,9 @@ public class GameScreen implements Screen {
             float centerX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
             float centerY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
             Vector2 spawnPos = new Vector2(centerX, centerY);
-            Texture enemyTexture = new Texture("enemy/npc" + (i + 1) + ".png");
-            npcList.add(new Enemy(world, this, enemyTexture, spawnPos));
+
+            String enemyRegionName = "enemy2";
+            npcList.add(new Enemy(world, this, enemyAtlas, spawnPos, enemyRegionName));
         }
     }
 
