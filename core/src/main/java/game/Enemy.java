@@ -1,11 +1,12 @@
 package game;
 
+import Sprites.Direction;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +29,20 @@ public class Enemy extends Sprite {
     private boolean pendingRespawn;
     private static final float MIN_RESPAWN_DISTANCE = 5.0f;
 
-    public Enemy(World world, GameScreen screen, Texture texture, Vector2 spawnPos) {
-        super(texture);
+    private static final int FRAME_WIDTH = 17;
+    private static final int FRAME_HEIGHT = 30;
+
+    // Animations
+    private TextureRegion currentFrame;
+    private Animation<TextureRegion> walkUp;
+    private Animation<TextureRegion> walkRight;
+    private Animation<TextureRegion> walkDown;
+    private Direction direction;
+
+
+
+    public Enemy(World world, GameScreen screen, TextureAtlas atlas, Vector2 spawnPos, String regionName) {
+        super(atlas.findRegion(regionName));
         this.world = world;
         this.stateTimer = 0f;
         this.chaseTimer = 0f;
@@ -38,11 +51,47 @@ public class Enemy extends Sprite {
         this.scatterDirection = getRandomDirection();
         this.spawnPos = spawnPos;
         this.pendingRespawn = false;
+        this.direction = Direction.SOUTH;
 
-        setSize(getTexture().getWidth() / MainGame.PIXELS_PER_METER,
-            getTexture().getHeight() / MainGame.PIXELS_PER_METER);
+        // Enemy animation setup
+        setupAnimation(atlas.findRegion(regionName));
+
+
+        setSize(FRAME_WIDTH / MainGame.PIXELS_PER_METER,
+            FRAME_HEIGHT / MainGame.PIXELS_PER_METER);
         createBody(spawnPos);
     }
+
+    private void setupAnimation(TextureRegion region) {
+        int columns = 3;
+
+        Array<TextureRegion> framesUp = new Array<>();
+        Array<TextureRegion> frameRight = new Array<>();
+        Array<TextureRegion> framesDown = new Array<>();
+
+        for (int col = 0; col < columns; col++) {
+            int x = region.getRegionX() + col * FRAME_WIDTH;
+
+            // Row 0: Up
+            int yUp = region.getRegionY();
+            framesUp.add(new TextureRegion(region.getTexture(), x, yUp, FRAME_WIDTH, FRAME_HEIGHT));
+
+            // Row 1: Right
+            int yRight = region.getRegionY() + FRAME_HEIGHT;
+            frameRight.add(new TextureRegion(region.getTexture(), x, yRight, FRAME_WIDTH, FRAME_HEIGHT));
+
+            // Row 2: Down
+            int yDown = region.getRegionY() + FRAME_HEIGHT * 2;
+            framesDown.add(new TextureRegion(region.getTexture(), x, yDown, FRAME_WIDTH, FRAME_HEIGHT));
+        }
+
+        walkUp = new Animation<>(0.15f, framesUp, Animation.PlayMode.LOOP);
+        walkRight = new Animation<>(0.15f, frameRight, Animation.PlayMode.LOOP);
+        walkDown = new Animation<>(0.15f, framesDown, Animation.PlayMode.LOOP);
+
+        currentFrame = walkDown.getKeyFrame(0); // Default frame
+    }
+
 
     private void createBody(Vector2 spawnPos) {
         BodyDef bodyDef = new BodyDef();
@@ -144,6 +193,45 @@ public class Enemy extends Sprite {
             body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
         }
 
+        Vector2 vel = body.getLinearVelocity();
+        if (vel.len2() < 0.05f) {
+            body.setLinearVelocity(0, 0); // stop sliding
+        }
+
+        // Determine sprite facing direction
+
+        if (Math.abs(vel.x) > Math.abs(vel.y)) {
+            this.direction = (vel.x > 0) ? Direction.EAST : Direction.WEST;
+        } else if (Math.abs(vel.y) > 0.1f) {
+            this.direction = (vel.y > 0) ? Direction.NORTH : Direction.SOUTH;
+        }
+
+        boolean isIdle = vel.len2() < 0.05f;
+
+        if (isIdle) {
+            // Pick a standing frame (use center frame from down-facing walk row)
+            currentFrame = walkDown.getKeyFrame(0);
+        } else {
+            // Update current animation frame
+            switch (this.direction) {
+                case NORTH:
+                    currentFrame = walkUp.getKeyFrame(stateTimer, true);
+                    break;
+                case EAST:
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                    break;
+                case WEST:
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                    break;
+                case SOUTH:
+                default:
+                    currentFrame = walkDown.getKeyFrame(stateTimer, true);
+                    break;
+            }
+        }
+
         setPosition(body.getPosition().x - getWidth() / 2,
             body.getPosition().y - getHeight() / 2);
     }
@@ -165,7 +253,7 @@ public class Enemy extends Sprite {
         if (pendingRespawn) {
             return;
         }
-        super.draw(batch);
+        batch.draw(currentFrame, getX(), getY(), getWidth(), getHeight());
     }
 }
 
