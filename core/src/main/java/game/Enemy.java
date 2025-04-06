@@ -62,7 +62,6 @@ public class Enemy extends Sprite {
         setSize(dimensions.getFrameWidth() / MainGame.PIXELS_PER_METER,
             dimensions.getFrameHeight() / MainGame.PIXELS_PER_METER);
         createBody(spawnPos);
-        createBody(spawnPos);
     }
 
     private void setupAnimation(TextureRegion region) {
@@ -170,21 +169,21 @@ public class Enemy extends Sprite {
 
         stateTimer += delta;
 
+        // Determine movement behavior (chase or scatter)
+        Vector2 movementDirection = new Vector2();
         if (!isChasing && stateTimer >= CHASE_INTERVAL) {
             isChasing = true;
             chaseTimer = 0f;
         }
-        Vector2 direction = new Vector2();
-
         if (isChasing) {
             chaseTimer += delta;
-            direction.set(playerPosition).sub(body.getPosition());
-            if (direction.len() < 0.001f) {
-                direction.set(scatterDirection);
+            movementDirection.set(playerPosition).sub(body.getPosition());
+            if (movementDirection.len() < 0.001f) {
+                movementDirection.set(scatterDirection);
             } else {
-                direction.nor();
+                movementDirection.nor();
             }
-            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
+            body.setLinearVelocity(movementDirection.scl(CONSTANT_SPEED));
             if (chaseTimer >= CHASE_DURATION) {
                 isChasing = false;
                 stateTimer = 0f;
@@ -195,13 +194,49 @@ public class Enemy extends Sprite {
                 scatterDirection = chooseFreeDirection();
                 stateTimer = 0f;
             }
-            direction.set(scatterDirection);
-            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
+            movementDirection.set(scatterDirection);
+            body.setLinearVelocity(movementDirection.scl(CONSTANT_SPEED));
         }
 
+        // Update sprite position
         setPosition(body.getPosition().x - getWidth() / 2,
             body.getPosition().y - getHeight() / 2);
+
+        // Get the current velocity for animation purposes
+        Vector2 velocity = body.getLinearVelocity();
+
+        // Idle threshold check
+        if (velocity.len2() < 0.01f) {
+            // Enemy is idle, choose an idle frame based on the last movement direction
+            currentFrame = walkDown.getKeyFrame(0);
+        } else {
+            // Update enemy direction based on movement
+            if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
+                // Horizontal movement
+                if (velocity.x > 0) {
+                    direction = Direction.EAST;
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    // Ensure frame is not flipped
+                    if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                } else {
+                    direction = Direction.WEST;
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    // Flip for left movement
+                    if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                }
+            } else {
+                // Vertical movement
+                if (velocity.y > 0) {
+                    direction = Direction.NORTH;
+                    currentFrame = walkUp.getKeyFrame(stateTimer, true);
+                } else {
+                    direction = Direction.SOUTH;
+                    currentFrame = walkDown.getKeyFrame(stateTimer, true);
+                }
+            }
+        }
     }
+
 
     public void onPlayerCollision() {
         if (screen.getPlayer().isInvincible()) {
