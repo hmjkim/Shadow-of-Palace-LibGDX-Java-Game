@@ -93,9 +93,14 @@ public class GameScreen implements Screen {
     private int currentTargetIndex;
     private final Map<RoyalConsortType, Texture> targetIcons;
 
+    // Pause
+    private boolean isPaused;
+    private PauseMenu pauseMenu;
+    private Stage mainStage;
+
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
-    public GameScreen(MainGame mainGame) {
+    public GameScreen(final MainGame mainGame) {
         atlas = new TextureAtlas("royalconsorts/royalconsorts.atlas");
         enemyAtlas = new TextureAtlas("enemy/enemies.atlas");
         this.game = mainGame;
@@ -210,6 +215,31 @@ public class GameScreen implements Screen {
             kitchen = new Kitchen(kitchenZone, this);
         }
 
+        // Pause
+        isPaused = false;
+        mainStage = new Stage(viewport);
+        pauseMenu = new PauseMenu(new PauseMenu.PauseScreenListener() {
+            @Override
+            public void onResume() {
+                isPaused = false;
+                pauseMenu.setVisible(false);
+                Gdx.input.setInputProcessor(mainStage);
+            }
+            @Override
+            public void onRestart() {
+                game.setScreen(new GameScreen(game));
+            }
+            @Override
+            public void onSave() {
+                saveGameState();
+            }
+            @Override
+            public void onExit() {
+                Gdx.app.exit();
+            }
+
+        });
+        pauseMenu.setVisible(false);
     }
 
     public void showMessage(String text, Color color) {
@@ -419,6 +449,11 @@ public class GameScreen implements Screen {
      */
     public void update(float delta) {
         handleInput(delta);
+
+        // if state is paused, don't proceed with update
+        if (isPaused) {
+            return;
+        }
         // Remove expired messages
         messageQueue.removeIf(message -> message.update(delta));
 
@@ -567,32 +602,41 @@ public class GameScreen implements Screen {
      * Handle continuous input by setting the player's velocity directly.
      */
     private void handleInput(float delta) {
-        Body pBody = player.getBody();
-        // Set a constant movement speed in world units per second.
-        float moveSpeed = 2.0f;
-        // Start with zero velocity.
-        Vector2 velocity = new Vector2(0, 0);
 
-        // Check which keys are held down and adjust the velocity accordingly.
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            player.setDirection(Direction.EAST);
-            velocity.x = moveSpeed;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            isPaused = !isPaused; // Toggle pause flag
+            pauseMenu.setVisible(isPaused);
+            Gdx.input.setInputProcessor(isPaused ? pauseMenu.getStage() : mainStage);
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            player.setDirection(Direction.WEST);
-            velocity.x = -moveSpeed;
+
+        if (!isPaused) {
+            Body pBody = player.getBody();
+            // Set a constant movement speed in world units per second
+            float moveSpeed = 2.0f;
+            // Start with zero velocity.
+            Vector2 velocity = new Vector2(0, 0);
+
+            // Check which keys are held down and adjust the velocity accordingly
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                player.setDirection(Direction.EAST);
+                velocity.x = moveSpeed;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                player.setDirection(Direction.WEST);
+                velocity.x = -moveSpeed;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                player.setDirection(Direction.NORTH);
+                velocity.y = moveSpeed;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                player.setDirection(Direction.SOUTH);
+                velocity.y = -moveSpeed;
+            }
+            // Set the player's velocity every frame.
+            pBody.setLinearVelocity(velocity);
+            handleItemUsageInput();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            player.setDirection(Direction.NORTH);
-            velocity.y = moveSpeed;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            player.setDirection(Direction.SOUTH);
-            velocity.y = -moveSpeed;
-        }
-        // Set the player's velocity every frame.
-        pBody.setLinearVelocity(velocity);
-        handleItemUsageInput();
     }
 
     public Player getPlayer() {
@@ -608,9 +652,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Update game logic
-        update(delta);
 
+        if (!isPaused) {
+            // Update game logic
+            update(delta);
+        } else {
+            pauseMenu.act(delta);
+        }
         // Clear the screen
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -767,6 +815,10 @@ public class GameScreen implements Screen {
 
             Gdx.gl.glDisable(GL20.GL_BLEND);
         }
+
+        if (isPaused) {
+            pauseMenu.draw();
+        }
     }
 
     @Override
@@ -775,6 +827,11 @@ public class GameScreen implements Screen {
         viewport.update(width, height);
         uiCamera.setToOrtho(false, width, height);
         uiCamera.update();
+
+        // Update the stage's viewport on resize
+        pauseMenu.getStage().getViewport().update(width, height, true);
+        // update mainstage in the background as well(when pause menu pops up)
+        mainStage.getViewport().update(width, height, true);
     }
 
     @Override
