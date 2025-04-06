@@ -1,6 +1,7 @@
 package game;
 
 import Sprites.Direction;
+import Sprites.FrameRegionDimensions;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
@@ -29,8 +30,7 @@ public class Enemy extends Sprite {
     private boolean pendingRespawn;
     private static final float MIN_RESPAWN_DISTANCE = 5.0f;
 
-    private static final int FRAME_WIDTH = 17;
-    private static final int FRAME_HEIGHT = 30;
+    private final FrameRegionDimensions dimensions;
 
     // Animations
     private TextureRegion currentFrame;
@@ -41,7 +41,7 @@ public class Enemy extends Sprite {
 
 
 
-    public Enemy(World world, GameScreen screen, TextureAtlas atlas, Vector2 spawnPos, String regionName) {
+    public Enemy(World world, GameScreen screen, TextureAtlas atlas, Vector2 spawnPos, String regionName, FrameRegionDimensions dimensions) {
         super(atlas.findRegion(regionName));
         this.world = world;
         this.stateTimer = 0f;
@@ -52,13 +52,15 @@ public class Enemy extends Sprite {
         this.spawnPos = spawnPos;
         this.pendingRespawn = false;
         this.direction = Direction.SOUTH;
+        this.dimensions = dimensions;
 
         // Enemy animation setup
         setupAnimation(atlas.findRegion(regionName));
 
 
-        setSize(FRAME_WIDTH / MainGame.PIXELS_PER_METER,
-            FRAME_HEIGHT / MainGame.PIXELS_PER_METER);
+        // Set sprite size using dynamic dimensions and converting to world units
+        setSize(dimensions.getFrameWidth() / MainGame.PIXELS_PER_METER,
+            dimensions.getFrameHeight() / MainGame.PIXELS_PER_METER);
         createBody(spawnPos);
     }
 
@@ -69,27 +71,30 @@ public class Enemy extends Sprite {
         Array<TextureRegion> frameRight = new Array<>();
         Array<TextureRegion> framesDown = new Array<>();
 
+        // Loop through each column to extract the frames based on dynamic dimensions
         for (int col = 0; col < columns; col++) {
-            int x = region.getRegionX() + col * FRAME_WIDTH;
+            int x = region.getRegionX() + col * dimensions.getFrameWidth();
 
             // Row 0: Up
             int yUp = region.getRegionY();
-            framesUp.add(new TextureRegion(region.getTexture(), x, yUp, FRAME_WIDTH, FRAME_HEIGHT));
+            framesUp.add(new TextureRegion(region.getTexture(), x, yUp, dimensions.getFrameWidth(), dimensions.getFrameHeight()));
 
+            System.out.println("width" + dimensions.getFrameWidth() + ", height" + dimensions.getFrameHeight());
             // Row 1: Right
-            int yRight = region.getRegionY() + FRAME_HEIGHT;
-            frameRight.add(new TextureRegion(region.getTexture(), x, yRight, FRAME_WIDTH, FRAME_HEIGHT));
+            int yRight = region.getRegionY() + dimensions.getFrameHeight();
+            frameRight.add(new TextureRegion(region.getTexture(), x, yRight, dimensions.getFrameWidth(), dimensions.getFrameHeight()));
 
             // Row 2: Down
-            int yDown = region.getRegionY() + FRAME_HEIGHT * 2;
-            framesDown.add(new TextureRegion(region.getTexture(), x, yDown, FRAME_WIDTH, FRAME_HEIGHT));
+            int yDown = region.getRegionY() + dimensions.getFrameHeight() * 2;
+            framesDown.add(new TextureRegion(region.getTexture(), x, yDown, dimensions.getFrameWidth(), dimensions.getFrameHeight()));
         }
 
         walkUp = new Animation<>(0.15f, framesUp, Animation.PlayMode.LOOP);
         walkRight = new Animation<>(0.15f, frameRight, Animation.PlayMode.LOOP);
         walkDown = new Animation<>(0.15f, framesDown, Animation.PlayMode.LOOP);
 
-        currentFrame = walkDown.getKeyFrame(0); // Default frame
+        // Set a default frame (standing down)
+        currentFrame = walkDown.getKeyFrame(0);
     }
 
 
@@ -164,21 +169,21 @@ public class Enemy extends Sprite {
 
         stateTimer += delta;
 
+        // Determine movement behavior (chase or scatter)
+        Vector2 movementDirection = new Vector2();
         if (!isChasing && stateTimer >= CHASE_INTERVAL) {
             isChasing = true;
             chaseTimer = 0f;
         }
-        Vector2 direction = new Vector2();
-
         if (isChasing) {
             chaseTimer += delta;
-            direction.set(playerPosition).sub(body.getPosition());
-            if (direction.len() < 0.001f) {
-                direction.set(scatterDirection);
+            movementDirection.set(playerPosition).sub(body.getPosition());
+            if (movementDirection.len() < 0.001f) {
+                movementDirection.set(scatterDirection);
             } else {
-                direction.nor();
+                movementDirection.nor();
             }
-            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
+            body.setLinearVelocity(movementDirection.scl(CONSTANT_SPEED));
             if (chaseTimer >= CHASE_DURATION) {
                 isChasing = false;
                 stateTimer = 0f;
@@ -189,52 +194,49 @@ public class Enemy extends Sprite {
                 scatterDirection = chooseFreeDirection();
                 stateTimer = 0f;
             }
-            direction.set(scatterDirection);
-            body.setLinearVelocity(direction.scl(CONSTANT_SPEED));
+            movementDirection.set(scatterDirection);
+            body.setLinearVelocity(movementDirection.scl(CONSTANT_SPEED));
         }
 
-        Vector2 vel = body.getLinearVelocity();
-        if (vel.len2() < 0.05f) {
-            body.setLinearVelocity(0, 0); // stop sliding
-        }
-
-        // Determine sprite facing direction
-
-        if (Math.abs(vel.x) > Math.abs(vel.y)) {
-            this.direction = (vel.x > 0) ? Direction.EAST : Direction.WEST;
-        } else if (Math.abs(vel.y) > 0.1f) {
-            this.direction = (vel.y > 0) ? Direction.NORTH : Direction.SOUTH;
-        }
-
-        boolean isIdle = vel.len2() < 0.05f;
-
-        if (isIdle) {
-            // Pick a standing frame (use center frame from down-facing walk row)
-            currentFrame = walkDown.getKeyFrame(0);
-        } else {
-            // Update current animation frame
-            switch (this.direction) {
-                case NORTH:
-                    currentFrame = walkUp.getKeyFrame(stateTimer, true);
-                    break;
-                case EAST:
-                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
-                    if (currentFrame.isFlipX()) currentFrame.flip(true, false);
-                    break;
-                case WEST:
-                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
-                    if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
-                    break;
-                case SOUTH:
-                default:
-                    currentFrame = walkDown.getKeyFrame(stateTimer, true);
-                    break;
-            }
-        }
-
+        // Update sprite position
         setPosition(body.getPosition().x - getWidth() / 2,
             body.getPosition().y - getHeight() / 2);
+
+        // Get the current velocity for animation purposes
+        Vector2 velocity = body.getLinearVelocity();
+
+        // Idle threshold check
+        if (velocity.len2() < 0.01f) {
+            // Enemy is idle, choose an idle frame based on the last movement direction
+            currentFrame = walkDown.getKeyFrame(0);
+        } else {
+            // Update enemy direction based on movement
+            if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
+                // Horizontal movement
+                if (velocity.x > 0) {
+                    direction = Direction.EAST;
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    // Ensure frame is not flipped
+                    if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                } else {
+                    direction = Direction.WEST;
+                    currentFrame = walkRight.getKeyFrame(stateTimer, true);
+                    // Flip for left movement
+                    if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                }
+            } else {
+                // Vertical movement
+                if (velocity.y > 0) {
+                    direction = Direction.NORTH;
+                    currentFrame = walkUp.getKeyFrame(stateTimer, true);
+                } else {
+                    direction = Direction.SOUTH;
+                    currentFrame = walkDown.getKeyFrame(stateTimer, true);
+                }
+            }
+        }
     }
+
 
     public void onPlayerCollision() {
         if (screen.getPlayer().isInvincible()) {
