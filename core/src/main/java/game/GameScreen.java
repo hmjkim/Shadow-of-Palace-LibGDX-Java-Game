@@ -417,6 +417,7 @@ public class GameScreen implements Screen {
                 for (RoyalConsort consort : royalConsortList) {
                     if (consort.shouldShowActionText() && consort.isAlive()) {
                         consort.isPoisoned(); // Mark them poisoned
+                        MysteryBox.getInstance().updateRecipe();
                         // inherit the new rank and change appearance
                         player.updateAppearance(consort.getType(), getAtlas());
                         System.out.println("Poisoned " + consort.getType().getName());
