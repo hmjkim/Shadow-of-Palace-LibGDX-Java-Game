@@ -72,6 +72,10 @@ public class GameScreen implements Screen {
     private List<Enemy> enemyRemovalQueue;
     private int enemyCount;
 
+    // kitchen
+    private Rectangle kitchenZone;
+    private boolean showMysteryBoxPrompt;
+
     // Royal Consorts
     private List<RoyalConsort> royalConsortList;
     private final List<RoyalConsort> consortRemovalQueue;
@@ -170,6 +174,8 @@ public class GameScreen implements Screen {
         this.enemyCount = 3;
         spawnEnemy();
         spawnRoyalConsorts();
+        this.showMysteryBoxPrompt = false;
+        markKitchen();
         spawnPlayerBasedOnCurrentRank();
 
         // System Message
@@ -197,7 +203,7 @@ public class GameScreen implements Screen {
                 player.setInvincible(20f);
                 System.out.println("Invincibility item used");
             } else {
-                System.out.println("No invincibility item available");//tell player there is no the item
+                System.out.println("No invincibility item available");
             }
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
@@ -206,7 +212,36 @@ public class GameScreen implements Screen {
                 PlayerHealth.getInstance().heal(1);
                 System.out.println("HeartRecovery item used");
             } else {
-                System.out.println("No HeartRecovery item available");//tell player there is no the item
+                System.out.println("No HeartRecovery item available");
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            MysteryBoxOutcome outcome = MysteryBox.getInstance().craft(PlayerInventory.getInstance());
+            if (outcome != null) {
+                switch (outcome) {
+                    case FAILURE:
+                        System.out.println("You got nothing");
+                        showMessage("You got nothing", Color.RED);
+                        break;
+                    case POISON:
+                        System.out.println("You got a Poison item!");
+                        showMessage("You got a Poison item!", Color.WHITE);
+                        PlayerInventory.getInstance().addPoison();
+                        break;
+                    case INVINCIBILITY:
+                        System.out.println("You got a Invincibility item!");
+                        showMessage("You got a Invincibility item!", Color.WHITE);
+                        PlayerInventory.getInstance().addInvincibility();
+                        break;
+                    case HEART_RECOVERY:
+                        System.out.println("You got a Heart Recovery item!");
+                        showMessage("You got a Heart Recovery item!", Color.WHITE);
+                        PlayerInventory.getInstance().addHeartRecovery();
+                        break;
+                }
+            } else {
+                System.out.println("Not enough ingredients!");
+                showMessage("Not enough ingredients!", Color.RED);
             }
         }
     }
@@ -214,6 +249,22 @@ public class GameScreen implements Screen {
     public void scheduleEnemyRemoval(Enemy enemy) {
         if (!enemyRemovalQueue.contains(enemy)) {
             enemyRemovalQueue.add(enemy);
+        }
+    }
+
+    private void markKitchen() {
+        if (map.getLayers().get("kitchen") != null) {
+            MapObjects kitchenObjects = map.getLayers().get("kitchen").getObjects();
+            if (!kitchenObjects.getByType(RectangleMapObject.class).isEmpty()) {
+                RectangleMapObject kitchenObj = (RectangleMapObject) kitchenObjects.getByType(RectangleMapObject.class).first();
+                Rectangle rect = kitchenObj.getRectangle();
+                kitchenZone = new Rectangle(
+                    rect.x / MainGame.PIXELS_PER_METER,
+                    rect.y / MainGame.PIXELS_PER_METER,
+                    rect.width / MainGame.PIXELS_PER_METER,
+                    rect.height / MainGame.PIXELS_PER_METER
+                );
+            }
         }
     }
 
@@ -363,6 +414,12 @@ public class GameScreen implements Screen {
 
         for (Enemy npc : npcList) {
             npc.update(delta, playerPos);
+        }
+
+        if (kitchenZone != null && kitchenZone.contains(playerPos)) {
+            showMysteryBoxPrompt = true;
+        } else {
+            showMysteryBoxPrompt = false;
         }
 
         for (RoyalConsort consort : royalConsortList) {
@@ -553,6 +610,49 @@ public class GameScreen implements Screen {
 
                 actionBoxFont.draw(game.batch, layout, textX, textY);
             }
+        }
+
+        //Show up Mystery Box message
+        if (showMysteryBoxPrompt) {
+            float centerX = kitchenZone.x + kitchenZone.width / 2f;
+            float centerY = kitchenZone.y + kitchenZone.height / 2f;
+            Vector2 zoneCenter = new Vector2(centerX, centerY);
+            Vector2 screenPos = worldToScreenCoordinates(zoneCenter);
+
+            float bubbleWidth = RoyalConsort.getActionBoxRegion().getRegionWidth() / MainGame.PIXELS_PER_METER;
+            float bubbleHeight = RoyalConsort.getActionBoxRegion().getRegionHeight() / MainGame.PIXELS_PER_METER;
+            float bubbleX = screenPos.x - bubbleWidth / 2f;
+            float bubbleY = screenPos.y + 50;
+
+            game.batch.draw(RoyalConsort.getActionBoxRegion(), bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+
+            MysteryBox mysteryBox = MysteryBox.getInstance();
+            boolean hasAllIngredients = PlayerInventory.getInstance().hasEnough(
+                mysteryBox.getWaterRequired(),
+                mysteryBox.getLeafRequired(),
+                mysteryBox.getRockRequired()
+            );
+            String prompt;
+            Color promptColor;
+            if (TimeManager.getInstance().getIsDayTime()) {
+                prompt = "Mystery Box crafting is only available at night";
+                promptColor = Color.RED;
+            } else {
+                if (hasAllIngredients) {
+                    prompt = "Press [M] to Craft Mystery Box";
+                    promptColor = Color.WHITE;
+                } else {
+                    prompt = "Not enough ingredients!";
+                    promptColor = Color.RED;
+                }
+            }
+
+            layout.setText(actionBoxFont, prompt);
+            float textX = bubbleX + (bubbleWidth - layout.width) / 2f;
+            float textY = bubbleY + (bubbleHeight + layout.height) / 2f;
+            actionBoxFont.setColor(promptColor);
+            actionBoxFont.draw(game.batch, layout, textX, textY);
+            actionBoxFont.setColor(Color.WHITE);
         }
 
         // Rank HUD
