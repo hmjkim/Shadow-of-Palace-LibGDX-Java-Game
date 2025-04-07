@@ -1127,14 +1127,9 @@
   <object id="588" name="npc16" x="882.667" y="270.667" width="14.6667" height="17.3333"/>
   <object id="589" name="npc21" x="301.333" y="720" width="17.3333" height="17.3333"/>
   <object id="590" name="npc25" x="1313.33" y="145.333" width="16" height="16"/>
-  <object id="591" name="npc29" x="640" y="657.333" width="17.3333" height="16"/>
-  <object id="592" name="npc30" x="881.333" y="592" width="16" height="16"/>
   <object id="593" name="npc22" x="1313.33" y="944" width="16" height="17.3333"/>
   <object id="594" name="npc24" x="370.667" y="909.333" width="14.6667" height="20"/>
-  <object id="595" name="npc27" x="878.667" y="1104" width="18.6667" height="17.3333"/>
   <object id="596" name="npc23" x="641.333" y="912" width="13.3333" height="16"/>
-  <object id="597" name="npc28" x="1153.33" y="622.667" width="14.6667" height="16"/>
-  <object id="598" name="npc26" x="640" y="913.333" width="14.6667" height="14.6667"/>
  </objectgroup>
  <objectgroup id="31" name="kitchen">
   <object id="569" x="1057" y="641" width="15" height="16"/>

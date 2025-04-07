@@ -195,7 +195,7 @@ public class GameScreen implements Screen {
         this.shapeRenderer = new ShapeRenderer();
 
         this.stage = 1;
-        final int startEnemyNumber = 26;
+        final int startEnemyNumber = 21;
 
         royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();
