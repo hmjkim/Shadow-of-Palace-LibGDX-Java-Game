@@ -2,9 +2,12 @@ package game;
 
 import Helper.FontManager;
 import Ingredients.IngredientManager;
+import Manager.GameSaveManager;
+import Manager.GameState;
 import Sprites.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -24,6 +27,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -239,6 +243,13 @@ public class GameScreen implements Screen {
 
         });
         pauseMenu.setVisible(false);
+    }
+
+    public GameScreen(final MainGame mainGame, final GameState loadedState) {
+        this(mainGame);  // Call the default constructor to do all initialization
+        if (loadedState != null) {
+            applyGameState(loadedState);
+        }
     }
 
     public void showMessage(String text, Color color) {
@@ -523,6 +534,103 @@ public class GameScreen implements Screen {
     public TextureAtlas getAtlas() {
         return atlas;
     }
+
+    private void saveGameState() {
+        GameState state = new GameState();
+
+        // Save player's position
+        state.setPlayerXPosition(player.getBody().getPosition().x);
+        state.setPlayerYPosition(player.getBody().getPosition().y);
+
+        // Save player's remaining hearts
+        state.setPlayerHealth(PlayerHealth.getInstance().getCurrentHearts());
+
+        // Save player's rank
+        state.setPlayerRank(player.getRank().name());
+
+        // Save current stage
+        state.setStage(stage);
+
+        // Save item/ ingredients count
+        PlayerInventory inventory = PlayerInventory.getInstance();
+        state.setWaterCount(inventory.getWaterCount());
+        state.setHerbCount(inventory.getHerbCount());
+        state.setStoneCount(inventory.getStoneCount());
+        state.setPoisonCount(inventory.getPoisonItemCount());
+        state.setInvincibilityCount(inventory.getInvincibilityItemCount());
+        state.setHeartRecoveryCount(inventory.getHeartRecoveryItemCount());
+
+        GameSaveManager.saveGame(state);
+        Gdx.app.log("GameState", state.toString());
+
+        System.out.println("Game saved!");
+    }
+
+    private void applyGameState(GameState state) {
+        // Set the player's position
+        player.getBody().setTransform(state.getPlayerXPosition(), state.getPlayerYPosition(), 0);
+
+        // Update the player's rank (convert the string saved in state back to the enum)
+        player.setRank(RoyalConsortType.valueOf(state.getPlayerRank()));
+
+        // Set the current stage
+        this.stage = state.getStage();
+
+        // Update player's health (make sure you have a setter in PlayerHealth)
+        PlayerHealth.getInstance().setCurrentHearts(state.getPlayerHealth());
+
+        // Update inventory counts (you'll need to add setters in your PlayerInventory if they don't exist yet)
+        PlayerInventory inventory = PlayerInventory.getInstance();
+        inventory.setWaterCount(state.getWaterCount());
+        inventory.setHerbCount(state.getHerbCount());
+        inventory.setStoneCount(state.getStoneCount());
+        inventory.setPoisonItemCount(state.getPoisonCount());
+        inventory.setInvincibilityItemCount(state.getInvincibilityCount());
+        inventory.setHeartRecoveryItemCount(state.getHeartRecoveryCount());
+
+        // Now that the player’s rank is updated, filter out any consorts that should not be present.
+        filterRoyalConsorts();
+
+        recalculateRoyalConsortsAndNextTarget();
+
+        Gdx.app.log("GameScreen", "Game state applied successfully.");
+    }
+
+    private void recalculateRoyalConsortsAndNextTarget() {
+        // 1. Update the player's appearance based on the current rank.
+        RoyalConsortType currentRank = player.getRank();
+        player.updateAppearance(currentRank, getAtlas());
+
+        // 2. Remove any dead royal consorts from the list.
+        royalConsortList.removeIf(consort -> !consort.isAlive());
+
+        // 3. Determine the next target (one rank up from the current rank).
+        RoyalConsortType nextTarget = null;
+        for (RoyalConsortType target : killOrder) {
+            if (target.ordinal() > currentRank.ordinal()) {
+                nextTarget = target;
+                break;
+            }
+        }
+        if (nextTarget != null) {
+            currentTargetIndex = killOrder.indexOf(nextTarget);
+        } else {
+            // If there is no next target (player might be at the highest rank),
+            // you can decide to either keep the current target, wrap around, or set a flag.
+            currentTargetIndex = -1;
+            Gdx.app.log("GameScreen", "Player is at the highest rank. No next target.");
+        }
+
+        Gdx.app.log("GameScreen", "Player appearance updated to " + currentRank +
+            ". Next target: " + (nextTarget != null ? nextTarget.getName() : "None"));
+    }
+
+    private void filterRoyalConsorts() {
+        RoyalConsortType currentRank = player.getRank();
+        // Remove any consort whose type is lower than or equal to the player's rank.
+        royalConsortList.removeIf(consort -> consort.getType().compareTo(currentRank) <= 0);
+    }
+
 
     private void handlePoisonInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {

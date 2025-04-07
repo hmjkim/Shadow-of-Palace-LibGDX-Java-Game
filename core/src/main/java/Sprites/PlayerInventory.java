@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class PlayerInventory {
     private int waterCount;
     private int herbCount;
-    private int rockCount;
+    private int stoneCount;
 
     private int poisonItemCount;
     private int invincibilityItemCount;
@@ -29,7 +29,7 @@ public class PlayerInventory {
     private PlayerInventory() {
         this.waterCount = 0;
         this.herbCount = 0;
-        this.rockCount = 0;
+        this.stoneCount = 0;
         this.poisonItemCount = 100;
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
@@ -79,8 +79,8 @@ public class PlayerInventory {
         this.herbCount++;
     }
 
-    public void addRock() {
-        this.rockCount++;
+    public void addStone() {
+        this.stoneCount++;
     }
 
     public void addPoison() {
@@ -95,14 +95,24 @@ public class PlayerInventory {
         this.heartRecoveryItemCount++;
     }
 
-    public boolean hasEnough(int waterReq, int herbReq, int rockReq) {
-        return waterCount >= waterReq && herbCount >= herbReq && rockCount >= rockReq;
+    public int getWaterCount() {
+        return this.waterCount;
+    }
+    public int getHerbCount() {
+        return this.herbCount;
+    }
+    public int getStoneCount() {
+        return this.stoneCount;
     }
 
-    public void removeIngredients(int waterReq, int herbReq, int rockReq) {
+    public boolean hasEnough(int waterReq, int herbReq, int stoneReq) {
+        return waterCount >= waterReq && herbCount >= herbReq && stoneCount >= stoneReq;
+    }
+
+    public void removeIngredients(int waterReq, int herbReq, int stoneReq) {
         this.waterCount -= waterReq;
         this.herbCount -= herbReq;
-        this.rockCount -= rockReq;
+        this.stoneCount -= stoneReq;
     }
     public void drawInventory(SpriteBatch batch, int screenWidth) {
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
@@ -112,7 +122,7 @@ public class PlayerInventory {
 
         font.draw(batch, "Water: " + waterCount, x + 25, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Leaf: " + herbCount, x + 130, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Rock: " + rockCount, x + 225, y + playerInventory.getHeight() - 70);
+        font.draw(batch, "Stone: " + stoneCount, x + 225, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Poison: " + poisonItemCount, x + 318, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Hide: " + invincibilityItemCount, x + 423, y + playerInventory.getHeight() - 70);
         font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 516, y + playerInventory.getHeight() - 70);
@@ -125,7 +135,7 @@ public class PlayerInventory {
                 addWater();
                 break;
             case STONE:
-                addRock();
+                addStone();
                 break;
             case HERB:
                 addHerb();
@@ -136,5 +146,33 @@ public class PlayerInventory {
     public void dispose() {
         playerInventory.dispose();
         font.dispose();
+    }
+
+    public void setHerbCount(int herbCount) {
+        this.herbCount = herbCount;
+    }
+
+    public void setStoneCount(int stoneCount) {
+        this.stoneCount = stoneCount;
+    }
+
+    public void setPoisonItemCount(int poisonItemCount) {
+        this.poisonItemCount = poisonItemCount;
+    }
+
+    public void setInvincibilityItemCount(int invincibilityItemCount) {
+        this.invincibilityItemCount = invincibilityItemCount;
+    }
+
+    public void setHeartRecoveryItemCount(int heartRecoveryItemCount) {
+        this.heartRecoveryItemCount = heartRecoveryItemCount;
+    }
+
+    public static void setInstance(PlayerInventory instance) {
+        PlayerInventory.instance = instance;
+    }
+
+    public void setWaterCount(final int waterCount) {
+        this.waterCount = waterCount;
     }
 }
