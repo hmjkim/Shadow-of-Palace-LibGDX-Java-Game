@@ -8,21 +8,31 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 
 import java.util.Objects;
 
-///**
-// * Handles collision events between player and enemy objects.
-// *
-// * @author Zoey Lee, Heather Kim
-// * @version 2025
-// */
+/**
+ * Handles collision events between player and enemy objects.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class CollisionListener implements ContactListener {
     private final GameScreen screen;
 
+    /**
+     * Constructs a Student with the specified screen.
+     *
+     * @param screen the game screen to notify for enemy removal actions
+     */
     public CollisionListener(final GameScreen screen) {
         this.screen = screen;
     }
 
+    /**
+     * Detects the beginning of a collision.
+     *
+     * @param contact the collision contact between two fixtures
+     */
     @Override
-    public void beginContact(Contact contact) {
+    public void beginContact(final Contact contact) {
         Object userDataA = contact.getFixtureA().getUserData();
         Object userDataB = contact.getFixtureB().getUserData();
 
@@ -43,12 +53,23 @@ public class CollisionListener implements ContactListener {
         }
     }
 
+    /**
+     * Processes the end of a collision.
+     *
+     * @param contact the collision contact between two fixtures
+     */
     @Override
-    public void endContact(Contact contact) {
+    public void endContact(final Contact contact) {
     }
 
+    /**
+     * Evaluates the collision before it is solved.
+     *
+     * @param contact the collision contact between two fixtures
+     * @param oldManifold the previous collision manifold
+     */
     @Override
-    public void preSolve(Contact contact, Manifold oldManifold) {
+    public void preSolve(final Contact contact, final Manifold oldManifold) {
         Object userDataA = contact.getFixtureA().getUserData();
         Object userDataB = contact.getFixtureB().getUserData();
 
@@ -65,8 +86,14 @@ public class CollisionListener implements ContactListener {
         }
     }
 
+    /**
+     * Processes the collision after it is solved.
+     *
+     * @param contact the collision contact between two fixtures
+     * @param impulse the impulse applied during collision resolution
+     */
     @Override
-    public void postSolve(Contact contact, ContactImpulse impulse) {
+    public void postSolve(final Contact contact, final ContactImpulse impulse) {
     }
 
     /**
