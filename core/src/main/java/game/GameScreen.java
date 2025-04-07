@@ -464,6 +464,13 @@ public class GameScreen implements Screen {
         if (isPaused) {
             return;
         }
+
+        // Check if the player's health has reached 0 (game over condition)
+        if (PlayerHealth.getInstance().getCurrentHearts() <= 0) {
+            game.setScreen(new GameOverScreen(game));
+            return; // Skip further update logic
+        }
+
         // Remove expired messages
         messageQueue.removeIf(message -> message.update(delta));
 
