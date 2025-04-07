@@ -2,6 +2,8 @@ package Manager;
 
 import Sprites.RoyalConsortType;
 
+import java.util.Objects;
+
 public class GameState {
     // Player's position (Box2D world units)
     private float playerXPosition;
@@ -15,7 +17,7 @@ public class GameState {
 
     // Inventory counts
     private int waterCount;
-    private int herbCount;
+    private int leafCount;
     private int stoneCount;
     private int poisonCount;
     private int invincibilityCount;
@@ -29,9 +31,9 @@ public class GameState {
         playerXPosition = 0;
         playerYPosition = 0;
         playerRank = RoyalConsortType.GWI_IN.name();
-        stage = 1;
+        waterCount = 1;
         waterCount = 0;
-        herbCount = 0;
+        leafCount = 0;
         stoneCount = 0;
         poisonCount = 0;
         invincibilityCount = 0;
@@ -52,7 +54,7 @@ public class GameState {
     }
 
     public int getStage() {
-        return stage;
+        return waterCount;
     }
 
     public int getWaterCount() {
@@ -60,7 +62,7 @@ public class GameState {
     }
 
     public int getHerbCount() {
-        return herbCount;
+        return leafCount;
     }
 
     public int getStoneCount() {
@@ -95,16 +97,16 @@ public class GameState {
         this.playerRank = playerRank;
     }
 
-    public void setStage(int stage) {
-        this.stage = stage;
+    public void setStage(int waterCount) {
+        this.waterCount = GameState.this.waterCount;
     }
 
     public void setWaterCount(int waterCount) {
         this.waterCount = waterCount;
     }
 
-    public void setHerbCount(int herbCount) {
-        this.herbCount = herbCount;
+    public void setHerbCount(int leafCount) {
+        this.leafCount = leafCount;
     }
 
     public void setStoneCount(int stoneCount) {
@@ -127,20 +129,80 @@ public class GameState {
         this.playerHealth = playerHealth;
     }
 
+    /**
+     * Determines if the GameState is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the GameState is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        GameState gameState = (GameState) obj;
+        return Objects.equals(this.playerXPosition, gameState.playerXPosition)
+            && Objects.equals(this.playerYPosition, gameState.playerYPosition)
+            && Objects.equals(this.playerRank, gameState.playerRank)
+            && Objects.equals(this.stage, gameState.stage)
+            && Objects.equals(this.waterCount, gameState.waterCount)
+            && Objects.equals(this.leafCount, gameState.leafCount)
+            && Objects.equals(this.stoneCount, gameState.stoneCount)
+            && Objects.equals(this.poisonCount, gameState.poisonCount)
+            && Objects.equals(this.invincibilityCount, gameState.invincibilityCount)
+            && Objects.equals(this.heartRecoveryCount, gameState.heartRecoveryCount)
+            && Objects.equals(this.playerHealth, gameState.playerHealth);
+    }
+
+    /**
+     * Gets the hashcode of the GameState.
+     *
+     * @return the hashcode of the GameState as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.playerXPosition);
+        final int prime = 14;
+        result = prime * result + Objects.hashCode(this.playerYPosition);
+        result = prime * result + Objects.hashCode(this.playerRank);
+        result = prime * result + Objects.hashCode(this.stage);
+        result = prime * result + Objects.hashCode(this.waterCount);
+        result = prime * result + Objects.hashCode(this.leafCount);
+        result = prime * result + Objects.hashCode(this.stoneCount);
+        result = prime * result + Objects.hashCode(this.poisonCount);
+        result = prime * result + Objects.hashCode(this.invincibilityCount);
+        result = prime * result + Objects.hashCode(this.heartRecoveryCount);
+        result = prime * result + Objects.hashCode(this.playerHealth);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the GameState.
+     *
+     * @return the string representation of the GameState
+     */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("GameState{");
-        sb.append("playerXPosition=").append(playerXPosition);
-        sb.append(", playerYPosition=").append(playerYPosition);
+        final StringBuilder sb;
+        sb = new StringBuilder("GameState {");
+        sb.append("playerXPosition='").append(playerXPosition).append('\'');
+        sb.append(", playerYPosition='").append(playerYPosition).append('\'');
         sb.append(", playerRank='").append(playerRank).append('\'');
-        sb.append(", stage=").append(stage);
-        sb.append(", waterCount=").append(waterCount);
-        sb.append(", herbCount=").append(herbCount);
-        sb.append(", stoneCount=").append(stoneCount);
-        sb.append(", poisonCount=").append(poisonCount);
-        sb.append(", invincibilityCount=").append(invincibilityCount);
-        sb.append(", heartRecoveryCount=").append(heartRecoveryCount);
-        sb.append(", playerHealth=").append(playerHealth);
+        sb.append(", stage='").append(stage).append('\'');
+        sb.append(", waterCount='").append(waterCount).append('\'');
+        sb.append(", leafCount='").append(leafCount).append('\'');
+        sb.append(", stoneCount='").append(stoneCount).append('\'');
+        sb.append(", poisonCount='").append(poisonCount).append('\'');
+        sb.append(", invincibilityCount='").append(invincibilityCount).append('\'');
+        sb.append(", heartRecoveryCount='").append(heartRecoveryCount).append('\'');
+        sb.append(", playerHealth='").append(playerHealth);
         sb.append('}');
         return sb.toString();
     }
