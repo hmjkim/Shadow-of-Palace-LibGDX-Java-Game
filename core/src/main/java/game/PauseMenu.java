@@ -80,22 +80,7 @@ public class PauseMenu {
         stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Define local constants for overlay creation.
-        final int pixmapWidth = 1;
-        final int pixmapHeight = 1;
-        final float overlayRed = 0f;
-        final float overlayGreen = 0f;
-        final float overlayBlue = 0f;
-
-        // Create a dark transparent overlay.
-        final Pixmap pixmap = new Pixmap(pixmapWidth, pixmapHeight, Pixmap.Format.RGBA8888);
-        pixmap.setColor(overlayRed, overlayGreen, overlayBlue, OVERLAY_OPACITY);
-        pixmap.fill();
-        final Texture overlayTexture = new Texture(pixmap);
-        pixmap.dispose(); // Release pixmap resources.
-
-        final Image overlay = new Image(new TextureRegionDrawable(overlayTexture));
-        overlay.setFillParent(true); // Cover the entire screen.
+        final Image overlay = getOverlay();
 
         table = new Table();
         table.setFillParent(true);
@@ -115,12 +100,6 @@ public class PauseMenu {
         final TextButton restartButton = new TextButton("Restart", skin);
         final TextButton saveButton = new TextButton("Save", skin);
         final TextButton exitButton = new TextButton("Exit", skin);
-
-        // Create buttons
-        TextButton resumeButton = new TextButton("Resume", skin);
-        TextButton restartButton = new TextButton("Restart", skin);
-        TextButton saveButton = new TextButton("Save", skin);
-        TextButton exitButton = new TextButton("Exit", skin);
 
         // Add listeners for each button
         resumeButton.addListener(new ClickListener(){
@@ -146,7 +125,7 @@ public class PauseMenu {
 
         exitButton.addListener(new ClickListener(){
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 listener.onExit();
             }
         });
@@ -162,6 +141,28 @@ public class PauseMenu {
 
         stage.addActor(overlay);
         stage.addActor(table);
+    }
+
+    /*
+    * Gets background overlay.
+     */
+    private static Image getOverlay() {
+        final int pixmapWidth = 1;
+        final int pixmapHeight = 1;
+        final float overlayRed = 0f;
+        final float overlayGreen = 0f;
+        final float overlayBlue = 0f;
+
+        // Create a dark transparent overlay.
+        final Pixmap pixmap = new Pixmap(pixmapWidth, pixmapHeight, Pixmap.Format.RGBA8888);
+        pixmap.setColor(overlayRed, overlayGreen, overlayBlue, OVERLAY_OPACITY);
+        pixmap.fill();
+        final Texture overlayTexture = new Texture(pixmap);
+        pixmap.dispose(); // Release pixmap resources.
+
+        final Image overlay = new Image(new TextureRegionDrawable(overlayTexture));
+        overlay.setFillParent(true); // Cover the entire screen.
+        return overlay;
     }
 
     /**
