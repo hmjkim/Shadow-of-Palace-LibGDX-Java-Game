@@ -3,12 +3,24 @@ package Ingredients;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import game.MainGame;
+
 import java.util.Objects;
 
+/**
+ * Represents an ingredient sprite.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class Ingredient extends Sprite {
     private final IngredientType ingredientType;
 
-
+    /**
+     * Constructs an Ingredient with the specified region, ingredientType.
+     *
+     * @param region the texture region for the sprite
+     * @param ingredientType the type of ingredient
+     */
     public Ingredient(final TextureAtlas.AtlasRegion region, final IngredientType ingredientType) {
         super(region);  // sets the sprite to the given region
         this.ingredientType = ingredientType;
@@ -17,6 +29,11 @@ public class Ingredient extends Sprite {
             region.getRegionHeight() / MainGame.PIXELS_PER_METER);
     }
 
+    /**
+     * Returns the ingredient type.
+     *
+     * @return the ingredient type
+     */
     public IngredientType getType() {
         return ingredientType;
     }
