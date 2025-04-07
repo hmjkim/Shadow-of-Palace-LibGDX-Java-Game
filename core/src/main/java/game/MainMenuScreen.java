@@ -15,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import java.util.Objects;
+
 /**
  * Displays the main menu screen for the game.
  *
@@ -167,5 +169,57 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
         stage.dispose();
         skin.dispose();
+    }
+
+    /**
+     * Determines if the MainMenuScreen is equal to another object.
+     *
+     * @param object the object to compare
+     * @return true if the MainMenuScreen is equal to the other object, false otherwise
+     */
+    @Override
+    public final boolean equals(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (this == object) {
+            return true;
+        }
+        if (!(object.getClass() == this.getClass())) {
+            return false;
+        }
+        MainMenuScreen that = (MainMenuScreen) object;
+        return Objects.equals(this.game, that.game)
+            && Objects.equals(this.stage, that.stage)
+            && Objects.equals(this.skin, that.skin);
+    }
+
+    /**
+     * Gets the hashcode of the MainMenuScreen.
+     *
+     * @return the hashcode of the MainMenuScreen as an integer
+     */
+    @Override
+    public final int hashCode() {
+        final int prime = 17;
+        int result = Objects.hashCode(this.game);
+        result = prime * result + Objects.hashCode(this.stage);
+        result = prime * result + Objects.hashCode(this.skin);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the MainMenuScreen.
+     *
+     * @return the string representation of the MainMenuScreen
+     */
+    @Override
+    public final String toString() {
+        final StringBuilder sb = new StringBuilder("MainMenuScreen {");
+        sb.append("game='").append(this.game).append('\'');
+        sb.append(", stage='").append(this.stage).append('\'');
+        sb.append(", skin='").append(this.skin).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
