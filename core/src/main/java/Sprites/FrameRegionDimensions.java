@@ -72,7 +72,7 @@ public class FrameRegionDimensions {
     @Override
     public int hashCode() {
         int result = Objects.hashCode(this.frameHeight);
-        final int prime = 11;
+        final int prime = 16;
         result = prime * result + Objects.hashCode(this.frameWidth);
         return result;
     }
