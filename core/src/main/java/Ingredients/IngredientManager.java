@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import Sprites.PlayerInventory;
 import game.TimeManager;
@@ -124,5 +125,59 @@ public class IngredientManager {
         ingredient.setOriginCenter();
         ingredient.setPosition(position.x - ingredient.getWidth() / 2, position.y - ingredient.getHeight() / 2);
         return ingredient;
+    }
+
+    /**
+     * Determines if the IngredientManager is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the IngredientManager is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        IngredientManager ingredientManager = (IngredientManager) obj;
+        return Objects.equals(this.ingredients, ingredientManager.ingredients)
+            && Objects.equals(this.walkablePositions, ingredientManager.walkablePositions)
+            && Objects.equals(this.ingredientAtlas, ingredientManager.ingredientAtlas);
+    }
+
+    /**
+     * Gets the hashcode of the IngredientManager.
+     *
+     * @return the hashcode of the IngredientManager as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.ingredients);
+        final int prime = 13;
+        result = prime * result + Objects.hashCode(this.walkablePositions);
+        result = prime * result + Objects.hashCode(this.ingredientAtlas);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the IngredientManager.
+     *
+     * @return the string representation of the IngredientManager
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("IngredientManager {");
+        sb.append("ingredients='").append(this.ingredients).append('\'');
+        sb.append("walkablePositions='").append(this.walkablePositions).append('\'');
+        sb.append("ingredientAtlas='").append(this.ingredientAtlas);
+        sb.append('}');
+        return sb.toString();
     }
 }
