@@ -7,7 +7,6 @@ import Manager.GameState;
 import Sprites.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -31,6 +30,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.utils.Timer;
 
 import java.util.*;
 
@@ -467,7 +467,7 @@ public class GameScreen implements Screen {
 
         // Check if the player's health has reached 0 (game over condition)
         if (PlayerHealth.getInstance().getCurrentHearts() <= 0) {
-            game.setScreen(new GameOverScreen(game));
+            game.setScreen(new EndScreen(game, "Game Over", Color.RED));
             return; // Skip further update logic
         }
 
@@ -660,6 +660,22 @@ public class GameScreen implements Screen {
 
                             // inherit the new rank and change appearance
                             player.updateAppearance(consort.getType(), getAtlas());
+                            // If the player just became the Queen, show Game Over
+                            if (consort.getType() == RoyalConsortType.QUEEN) {
+                                showMessage("You are now the Queen!", Color.GOLD);
+                                System.out.println("Player has become the Queen! Transitioning in 2 seconds...");
+
+                                // move to end screen after 2seconds delay
+                                Timer.schedule(new Timer.Task() {
+                                    @Override
+                                    public void run() {
+                                        game.setScreen(new EndScreen(game, "The Throne Is Yours!", Color.GOLD));
+                                    }
+                                }, 2f);
+
+                                return;
+                            }
+
                             System.out.println("Poisoned " + consort.getType().getName());
                             showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
                         } else {
@@ -677,10 +693,10 @@ public class GameScreen implements Screen {
     private void spawnPlayerBasedOnCurrentRank() {
         RoyalConsortType currentRank = player.getRank();
         boolean found = false;
-        final RoyalConsortType intialRank = RoyalConsortType.GWI_IN;
+        final RoyalConsortType initialRank = RoyalConsortType.GWI_IN;
 
         // For ranks other than Gwi In, search the existing consort list
-        if (currentRank != intialRank) {
+        if (currentRank != initialRank) {
             for (RoyalConsort royalConsort : royalConsortList) {
                 if (royalConsort.getType() == currentRank) {
                     float consortCenterX = royalConsort.getX() + royalConsort.getWidth() / 2;
@@ -694,7 +710,7 @@ public class GameScreen implements Screen {
             // For Gwi In, retrieve the tile directly from the map
             MapObjects consortObjects = map.getLayers().get("RoyalConsorts").getObjects();
             for (MapObject object : consortObjects.getByType(RectangleMapObject.class)) {
-                if (intialRank.getName().equalsIgnoreCase(object.getName())) {
+                if (initialRank.getName().equalsIgnoreCase(object.getName())) {
                     Rectangle rect = ((RectangleMapObject) object).getRectangle();
                     float spawnX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
                     float spawnY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
@@ -783,9 +799,8 @@ public class GameScreen implements Screen {
         mapRenderer.setView(camera);
         mapRenderer.render();
 
-        // Optionally, render the Box2D debug lines (comment out if not needed).
         // Renderer our Box2DDebugLines
-        debugRenderer.render(world, camera.combined);
+        // debugRenderer.render(world, camera.combined);
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
