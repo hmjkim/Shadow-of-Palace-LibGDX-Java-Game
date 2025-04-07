@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,11 +14,22 @@ import java.util.Objects;
 import Sprites.PlayerInventory;
 import game.TimeManager;
 
+/**
+ * Manages ingredients.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class IngredientManager {
     private final Array<Ingredient> ingredients;
     private final List<Vector2> walkablePositions; // Precomputed positions from GameScreen
     private final TextureAtlas ingredientAtlas;
 
+    /**
+     * Constructs a IngredientManager with the specified walkablePositions.
+     *
+     * @param walkablePositions the precomputed walkable positions from GameScreen
+     */
     // Receives the walkable positions and loads the atlas
     public IngredientManager(final List<Vector2> walkablePositions) {
         this.ingredients = new Array<>();
@@ -26,7 +38,11 @@ public class IngredientManager {
         ingredientAtlas = new TextureAtlas("ingredients/ingredients.atlas");
     }
 
-    // Spawns a fixed number of ingredients spread out over distinct walkable positions
+    /**
+     * Spawns a fixed number of ingredients spread out over distinct walkable positions.
+     *
+     * @param count an int representing the number of ingredients to spawn
+     */
     public void spawnIngredients(final int count) {
         ingredients.clear();
         // Make a copy of walkable positions and shuffle them
@@ -41,7 +57,11 @@ public class IngredientManager {
         }
     }
 
-    // Replenishes ingredients to reach the original count if any are missing
+    /**
+     * Replenishes ingredients to reach the original count if any are missing.
+     *
+     * @param originalCount an int representing the original desired number of ingredients
+     */
     public void resupplyIngredients(final int originalCount) {
         int missingCount = originalCount - ingredients.size;
         if (missingCount <= 0) {
@@ -63,8 +83,15 @@ public class IngredientManager {
         }
     }
 
-    // Collects a nearby ingredient if the player is within the given threshold
-    public void collectNearbyIngredient(final Vector2 playerPosition, final float threshold, final PlayerInventory inventory) {
+    /**
+     * Collects a nearby ingredient if the player is within the given threshold.
+     *
+     * @param playerPosition a Vector2 representing the player's current position
+     * @param threshold a float representing the distance threshold for collection
+     * @param inventory a PlayerInventory representing the player's inventory to add the ingredient
+     */
+    public void collectNearbyIngredient(final Vector2 playerPosition, final float threshold,
+                                        final PlayerInventory inventory) {
         for (int index = ingredients.size - 1; index >= 0; index--) {
             Ingredient ingredient = ingredients.get(index);
             Vector2 ingredientCenter = new Vector2(
@@ -80,17 +107,11 @@ public class IngredientManager {
         }
     }
 
-    // Randomly picks one position from the precomputed list of walkable positions
-    public Vector2 getRandomWalkablePosition() {
-        if (walkablePositions.isEmpty()) {
-            // Fallback if no walkable tile found
-            return new Vector2(0, 0);
-        }
-        int randomIndex = MathUtils.random(walkablePositions.size() - 1);
-        return walkablePositions.get(randomIndex);
-    }
-
-    // Renders all ingredients
+    /**
+     * Renders all ingredients.
+     *
+     * @param batch the SpriteBatch used for rendering
+     */
     public void render(final SpriteBatch batch) {
         // Only render ingredients if it's day time
         if (!TimeManager.getInstance().getIsDayTime()) {
@@ -101,13 +122,18 @@ public class IngredientManager {
         }
     }
 
+    /**
+     * Returns the ingredients array.
+     *
+     * @return the Array of active ingredients
+     */
     public Array<Ingredient> getIngredients() {
         return ingredients;
     }
 
     // Private helper that creates a random ingredient at the given position,
     // centers the sprite on that position, and returns the Ingredient.
-    private Ingredient createRandomIngredientAt(Vector2 position) {
+    private Ingredient createRandomIngredientAt(final Vector2 position) {
         IngredientType ingredientType;
         TextureAtlas.AtlasRegion region;
         int randomValue = MathUtils.random(2);
@@ -123,7 +149,8 @@ public class IngredientManager {
         }
         Ingredient ingredient = new Ingredient(region, ingredientType);
         ingredient.setOriginCenter();
-        ingredient.setPosition(position.x - ingredient.getWidth() / 2, position.y - ingredient.getHeight() / 2);
+        ingredient.setPosition(position.x - ingredient.getWidth() / 2,
+            position.y - ingredient.getHeight() / 2);
         return ingredient;
     }
 
