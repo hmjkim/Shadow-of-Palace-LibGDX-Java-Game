@@ -4,11 +4,25 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 
-public class GameSaveManager {
+/**
+ * Saves the game state.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
+public final class GameSaveManager {
     private static final String SAVE_FILE = "savedgame.json";
 
+    private GameSaveManager() {
+    }
+
+    /**
+     * Saves the game state.
+     *
+     * @param state the GameState object to be saved
+     */
     // Save the game state to a JSON file
-    public static void saveGame(GameState state) {
+    public static void saveGame(final GameState state) {
         Json json = new Json();
         // Serialize the state object into a pretty-printed JSON string
         String data = json.prettyPrint(state);
@@ -17,7 +31,11 @@ public class GameSaveManager {
         Gdx.app.log("GameSaveManager", "Game saved:\n" + data);
     }
 
-    // Load the game state from the JSON file
+    /**
+     * Loads the game state from the JSON file.
+     *
+     * @return the deserialized GameState, or null if no saved game exists
+     */
     public static GameState loadGame() {
         FileHandle file = Gdx.files.local(SAVE_FILE);
         if (!file.exists()) {
