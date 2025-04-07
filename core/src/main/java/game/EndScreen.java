@@ -15,26 +15,44 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.util.Objects;
+
+/**
+ * Displays the end screen overlay for the game.
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class EndScreen implements Screen {
 
     private final MainGame game;
-    private Stage stage;
-    private Skin skin;
-    private String titleMessage;
-    private Color titleColor;
+    private final Stage stage;
+    private final Skin skin;
+    private final String titleMessage;
+    private final Color titleColor;
 
-    public EndScreen(MainGame game, String titleMessage, Color titleColor) {
+    /**
+     * Creates an EndScreen with the specified game, title message, and title color.
+     *
+     * @param game the MainGame instance for managing screen transitions
+     * @param titleMessage the title message to display on the end screen
+     * @param titleColor the color of the title message
+     * @throws IllegalArgumentException if any parameter is null
+     */
+    public EndScreen(final MainGame game, final String titleMessage, final Color titleColor) {
+        if (game == null || titleMessage == null || titleColor == null) {
+            throw new IllegalArgumentException("None of the parameters can be null");
+        }
         this.game = game;
-        // Create a Stage and set it as the input processor
-        stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
-        // Load a default skin
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-
         this.titleMessage = titleMessage;
         this.titleColor = titleColor;
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
     }
 
+    /**
+     * Initializes the end screen by creating the UI elements and arranging them in a table.
+     */
     @Override
     public void show() {
 
@@ -78,6 +96,11 @@ public class EndScreen implements Screen {
         table.add(exitButton).pad(10).width(150).height(50);
     }
 
+    /**
+     * Renders the end screen.
+     *
+     * @param delta the time in seconds since the last frame
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -86,16 +109,43 @@ public class EndScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the end screen to the new dimensions.
+     *
+     * @param width the new screen width in pixels
+     * @param height the new screen height in pixels
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+    /**
+     * Pauses the end screen.
+     */
     @Override
-    public void dispose() {
+    public final void pause() {
+    }
+
+    /**
+     * Resumes the end screen.
+     */
+    @Override
+    public final void resume() {
+    }
+
+    /**
+     * Hides the end screen.
+     */
+    @Override
+    public final void hide() {
+    }
+
+    /**
+     * Disposes of resources used by the end screen.
+     */
+    @Override
+    public final void dispose() {
         stage.dispose();
         skin.dispose();
     }
