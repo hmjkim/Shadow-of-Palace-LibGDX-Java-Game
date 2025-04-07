@@ -1,19 +1,19 @@
 package game;
 
-import Helper.FontManager;
 import Manager.GameSaveManager;
 import Manager.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 
 import java.util.Objects;
 
@@ -28,9 +28,8 @@ public class MainMenuScreen implements Screen {
     private static final int BUTTON_WIDTH = 150;
     private static final int BUTTON_HEIGHT = 50;
     private static final int BUTTON_PADDING = 10;
-    private static final int TITLE_PAD_BOTTOM = 40;
-    private static final int FONT_SIZE = 64;
-    private static final float TITLE_FONT_SCALE = 1.2f;
+    private static final int TITLE_PADDING = 40;
+    private static final int FONT_SIZE = 110;
 
     private final MainGame game;
     private final Stage stage;
@@ -61,16 +60,44 @@ public class MainMenuScreen implements Screen {
         // Load a default skin
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
+        // Add background
+        Texture backgroundTexture = new Texture(Gdx.files.internal("background.png"));
+        Image backgroundImage = new Image(backgroundTexture);
+        backgroundImage.setFillParent(true);
+        stage.addActor(backgroundImage);
+
         final Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
 
-        final Label.LabelStyle titleStyle = new Label.LabelStyle();
-        titleStyle.font = FontManager.generateFont(FONT_SIZE, Color.WHITE);
-        final Label titleLabel = new Label("Shadow of Palace", titleStyle);
-        titleLabel.setFontScale(TITLE_FONT_SCALE);
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
+            Gdx.files.internal("font/upheaval.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter =
+            new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        table.add(titleLabel).padBottom(TITLE_PAD_BOTTOM).colspan(1);
+        parameter.size = FONT_SIZE;
+        parameter.color = Color.valueOf("fefcde");
+
+        final int offset = 8;
+        final float opacity = 0.75f;
+        parameter.shadowOffsetX = offset;
+        parameter.shadowOffsetY = offset;
+        parameter.shadowColor = new Color(0, 0, 0, opacity);
+
+        BitmapFont fontWithShadow = generator.generateFont(parameter);
+        generator.dispose();
+
+        Label.LabelStyle style = new Label.LabelStyle();
+        style.font = fontWithShadow;
+
+        Label titleLabel = new Label("SHADOW \nOF\n PALACE", style);
+
+        // Set the label alignment to center
+        titleLabel.setAlignment(Align.center);
+
+        stage.addActor(titleLabel);
+
+        table.add(titleLabel).padTop(TITLE_PADDING).padBottom(TITLE_PADDING).colspan(1);
         table.row();
 
         // Create "Start" and "Exit" buttons
