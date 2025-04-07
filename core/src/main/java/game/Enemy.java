@@ -23,7 +23,7 @@ public class Enemy extends Sprite {
     private static final float RANDOM_MOVE_INTERVAL = 3.5f;
     private static final float CHASE_INTERVAL = 15f;
     private static final float CHASE_DURATION = 5f;
-    private static final float MIN_RESPAWN_DISTANCE = 2.5f;
+    private static final float MIN_RESPAWN_DISTANCE = 3.5f;
     private static final float DESIRED_ENEMY_DISTANCE = 1.0f;
     private static final float CHECK_DISTANCE = 3.0f;
     private static final float THRESHOLD = 0.0001f;
@@ -425,7 +425,8 @@ public class Enemy extends Sprite {
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Enemy{");
+        final StringBuilder sb;
+        sb = new StringBuilder("Enemy{");
         sb.append("world=").append(world);
         sb.append(", body=").append(body);
         sb.append(", stateTimer=").append(stateTimer);
