@@ -15,16 +15,32 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+/**
+ * Represents the main menu screen for the game.
+ * This screen displays the game title along with Start, Load, and Exit options.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class MainMenuScreen implements Screen {
     private final MainGame game;
-    private Stage stage;
+    private final Stage stage;
     private Skin skin;
 
-    public MainMenuScreen(MainGame game) {
+    /**
+     * Constructs a MainMenuScreen with the specified MainGame instance.
+     *
+     * @param game the MainGame instance
+     */
+    public MainMenuScreen(final MainGame game) {
         this.game = game;
         stage = new Stage();
     }
 
+    /**
+     * Initializes the main menu screen by setting the input processor,
+     * loading the UI skin, creating the layout table, and adding the title and buttons.
+     */
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -79,13 +95,18 @@ public class MainMenuScreen implements Screen {
             loadButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                        game.setScreen(new GameScreen(game, loadedState)); // new game with saved state                 }
+                        game.setScreen(new GameScreen(game, loadedState)); // new game with saved state
                 }
             });
         }
         table.add(exitButton).pad(10).width(150).height(50);
     }
 
+    /**
+     * Renders the main menu screen.
+     *
+     * @param delta the time in seconds
+     */
     @Override
     public void render(float delta) {
         // Clear the screen
@@ -97,21 +118,39 @@ public class MainMenuScreen implements Screen {
         stage.draw();
     }
 
+    /**
+     * Resizes the main menu screen.
+     *
+     * @param width  the new screen width in pixels
+     * @param height the new screen height in pixels
+     */
     @Override
     public void resize(int width, int height) {
         // Update the viewport when the screen size changes
         stage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Pauses the game.
+     */
     @Override
     public void pause() {  }
 
+    /**
+     * Resumes the game.
+     */
     @Override
     public void resume() {  }
 
+    /**
+     * Hides this screen when it is no longer current.
+     */
     @Override
     public void hide() {  }
 
+    /**
+     * Disposes of resources used by the main menu screen.
+     */
     @Override
     public void dispose() {
         stage.dispose();
