@@ -3,18 +3,34 @@ package game;
 import Sprites.PlayerInventory;
 import com.badlogic.gdx.math.MathUtils;
 
+import java.util.Objects;
+
+/**
+ * Crafts outcomes based on a recipe of required ingredients.
+ *
+ *  @author Zoey Lee, Heather Kim
+ *  @version 2025
+ */
 public class MysteryBox {
     private static MysteryBox instance;
     private int waterRequired;
     private int leafRequired;
     private int rockRequired;
 
+    /*
+     * Creates a MysteryBox with the specified ingredient requirements.
+     */
     private MysteryBox(final int waterRequired, final int leafRequired, final int rockRequired) {
         this.waterRequired = waterRequired;
         this.leafRequired = leafRequired;
         this.rockRequired = rockRequired;
     }
 
+    /**
+     * Gets the singleton instance of MysteryBox.
+     *
+     * @return the singleton instance of MysteryBox
+     */
     public static MysteryBox getInstance() {
         if (instance == null) {
             instance = new MysteryBox(5, 5, 5);
@@ -22,7 +38,13 @@ public class MysteryBox {
         return instance;
     }
 
-    public MysteryBoxOutcome craft(PlayerInventory inventory) {
+    /**
+     * Crafts an outcome based on the ingredients in the provided player inventory.
+     * @param inventory the player's inventory
+     * @return a MysteryBoxOutcome representing the result of crafting,
+     * or null if there are not enough ingredients
+     */
+    public MysteryBoxOutcome craft(final PlayerInventory inventory) {
         if (!inventory.hasEnough(this.waterRequired, this.leafRequired, this.rockRequired)) {
             return null;
         }
@@ -40,18 +62,36 @@ public class MysteryBox {
         }
     }
 
+    /**
+     * Gets the required water count.
+     *
+     * @return the water required as an integer
+     */
     public int getWaterRequired() {
         return waterRequired;
     }
 
+    /**
+     * Gets the required leaf count.
+     *
+     * @return the leaf required as an integer
+     */
     public int getLeafRequired() {
         return leafRequired;
     }
 
+    /**
+     * Gets the required rock count.
+     *
+     * @return the rock required as an integer
+     */
     public int getRockRequired() {
         return rockRequired;
     }
 
+    /**
+     * Updates the recipe by incrementing the required ingredient amounts by one.
+     */
     public void updateRecipe() {
         this.waterRequired++;
         this.leafRequired++;
