@@ -1,6 +1,5 @@
 package Sprites;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -10,6 +9,8 @@ import com.badlogic.gdx.math.Vector2;
 import game.MainGame;
 import game.TimeManager;
 
+import java.util.Objects;
+
 public class RoyalConsort extends Sprite {
 
     private RoyalConsortType type;
@@ -18,14 +19,14 @@ public class RoyalConsort extends Sprite {
     // Shared action box image (used to prompt the player).
     private static TextureRegion actionBox;
     // Flag to determine whether the action box should be shown.
-    private boolean showActionBox = false;
+    private boolean showActionBox;
     // Activation distance in world units (within which the action box appears).
     private static final float ACTIVATION_DISTANCE = 0.5f;
 
     // For Death Fadeout Animation
-    private boolean isDying = false;
-    private float deathTimer = 0f;
-    private final float DEATH_DURATION = 1.5f; // seconds
+    private boolean isDying;
+    private float deathTimer;
+    private static final float DEATH_DURATION = 1.5f; // seconds
 
     /**
      * Constructs a RoyalConsort with its front view image.
@@ -40,6 +41,9 @@ public class RoyalConsort extends Sprite {
         super(region);
         this.type = type;
         this.isAlive = true;
+        this.showActionBox = false;
+        this.isDying = false;
+        this.deathTimer = 0f;
         setSize(region.getRegionWidth() / MainGame.PIXELS_PER_METER,
             region.getRegionHeight() / MainGame.PIXELS_PER_METER);
         setPosition(initialPositionX, initialPositionY);
@@ -148,5 +152,64 @@ public class RoyalConsort extends Sprite {
         setColor(originalColor);
     }
 
+    /**
+     * Determines if the RoyalConsort is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the RoyalConsort is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
 
+        RoyalConsort royalConsort = (RoyalConsort) obj;
+        return super.equals(obj) && Objects.equals(this.type, royalConsort.type)
+            && Objects.equals(this.isAlive, royalConsort.isAlive)
+            && Objects.equals(this.showActionBox, royalConsort.showActionBox)
+            && Objects.equals(this.isDying, royalConsort.isDying)
+            && Objects.equals(this.deathTimer, royalConsort.deathTimer);
+    }
+
+    /**
+     * Gets the hashcode of the RoyalConsort.
+     *
+     * @return the hashcode of the RoyalConsort as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.type);
+        final int prime = 17;
+        result = prime * result + Objects.hashCode(this.isAlive);
+        result = prime * result + Objects.hashCode(this.showActionBox);
+        result = prime * result + Objects.hashCode(this.isDying);
+        result = prime * result + Objects.hashCode(this.deathTimer);
+        result = prime * result + super.hashCode();
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the RoyalConsort.
+     *
+     * @return the string representation of the RoyalConsort
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("RoyalConsort {");
+        sb.append("type='").append(this.type).append('\'');
+        sb.append("isAlive='").append(this.isAlive).append('\'');
+        sb.append("showActionBox='").append(this.showActionBox).append('\'');
+        sb.append("isDying='").append(this.isDying).append('\'');
+        sb.append("deathTimer='").append(this.deathTimer);
+        sb.append('}');
+        return super.toString() + sb;
+    }
 }
