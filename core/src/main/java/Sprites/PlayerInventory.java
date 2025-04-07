@@ -1,6 +1,5 @@
 package Sprites;
 
-import Ingredients.Ingredient;
 import Ingredients.IngredientType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -14,7 +13,9 @@ import java.util.Objects;
  * @author Zoey Lee, Heather Kim
  * @version 2025
  */
-public class PlayerInventory {
+public final class PlayerInventory {
+    private static PlayerInventory instance;
+
     private int waterCount;
     private int herbCount;
     private int stoneCount;
@@ -27,8 +28,6 @@ public class PlayerInventory {
 
     private final BitmapFont font;
 
-    private static PlayerInventory instance;
-
     private PlayerInventory() {
         this.waterCount = 0;
         this.herbCount = 0;
@@ -40,9 +39,15 @@ public class PlayerInventory {
         this.playerInventory = new Texture("inventory/inventory.png");
 
         font = new BitmapFont();
-        font.getData().setScale(0.84f);
+        final float fontOffset = 0.84f;
+        font.getData().setScale(fontOffset);
     }
 
+    /**
+     * Retrieves the singleton instance.
+     *
+     * @return the PlayerInventory instance
+     */
     public static PlayerInventory getInstance() {
         if (instance == null) {
             instance = new PlayerInventory();
@@ -50,89 +55,188 @@ public class PlayerInventory {
         return instance;
     }
 
+    /**
+     * Returns the current poison item count.
+     *
+     * @return the poison item count
+     */
     public int getPoisonItemCount() {
         return this.poisonItemCount;
     }
 
+    /**
+     * Removes one poison item.
+     */
     public void removePoisonItem() {
         this.poisonItemCount--;
     }
 
+    /**
+     * Returns the current invincibility item count.
+     *
+     * @return the invincibility item count
+     */
     public int getInvincibilityItemCount() {
         return this.invincibilityItemCount;
     }
 
+    /**
+     * Removes one invincibility item.
+     */
     public void removeInvincibilityItem() {
         this.invincibilityItemCount--;
     }
 
+    /**
+     * Returns the current heart recovery item count.
+     *
+     * @return the heart recovery item count
+     */
     public int getHeartRecoveryItemCount() {
         return this.heartRecoveryItemCount;
     }
 
+    /**
+     * Removes one heart recovery item.
+     */
     public void removeHeartRecoveryItem() {
         this.heartRecoveryItemCount--;
     }
 
+    /**
+     * Adds one water ingredient.
+     */
     public void addWater() {
         this.waterCount++;
     }
 
+    /**
+     * Adds one herb ingredient.
+     */
     public void addHerb() {
         this.herbCount++;
     }
 
+    /**
+     * Adds one stone ingredient.
+     */
     public void addStone() {
         this.stoneCount++;
     }
 
+    /**
+     * Adds one poison item.
+     */
     public void addPoison() {
         this.poisonItemCount++;
     }
 
+    /**
+     * Adds one invincibility item.
+     */
     public void addInvincibility() {
         this.invincibilityItemCount++;
     }
 
+    /**
+     * Adds one heart recovery item.
+     */
     public void addHeartRecovery() {
         this.heartRecoveryItemCount++;
     }
 
+    /**
+     * Returns the water ingredient count.
+     *
+     * @return the water count
+     */
     public int getWaterCount() {
         return this.waterCount;
     }
 
+    /**
+     * Returns the herb ingredient count.
+     *
+     * @return the herb count
+     */
     public int getHerbCount() {
         return this.herbCount;
     }
 
+    /**
+     * Returns the stone ingredient count.
+     *
+     * @return the stone count
+     */
     public int getStoneCount() {
         return this.stoneCount;
     }
 
-    public boolean hasEnough(int waterReq, int herbReq, int stoneReq) {
+    /**
+     * Checks if there are enough ingredients to craft a mystery box.
+     *
+     * @param waterReq the required water count
+     * @param herbReq the required herb count
+     * @param stoneReq the required stone count
+     * @return true if there are enough ingredients, false otherwise
+     */
+    public boolean hasEnough(final int waterReq, final int herbReq, final int stoneReq) {
         return waterCount >= waterReq && herbCount >= herbReq && stoneCount >= stoneReq;
     }
 
-    public void removeIngredients(int waterReq, int herbReq, int stoneReq) {
+    /**
+     * Removes specified amounts of ingredients after crafting a mystery box.
+     *
+     * @param waterReq the water count to remove
+     * @param herbReq the herb count to remove
+     * @param stoneReq the stone count to remove
+     */
+    public void removeIngredients(final int waterReq, final int herbReq, final int stoneReq) {
         this.waterCount -= waterReq;
         this.herbCount -= herbReq;
         this.stoneCount -= stoneReq;
     }
 
-    public void drawInventory(SpriteBatch batch, int screenWidth) {
+    /**
+     * Draws the inventory UI.
+     *
+     * @param batch the SpriteBatch used for drawing
+     * @param screenWidth the width of the screen in pixels
+     */
+    public void drawInventory(final SpriteBatch batch, final int screenWidth) {
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
-        float y = 20;
+        final float y = 20;
 
         batch.draw(playerInventory, x, y);
 
-        font.draw(batch, "Water: " + waterCount, x + 25, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Leaf: " + herbCount, x + 130, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Stone: " + stoneCount, x + 225, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Poison: " + poisonItemCount, x + 318, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Hide: " + invincibilityItemCount, x + 423, y + playerInventory.getHeight() - 70);
-        font.draw(batch, "Heart: " + heartRecoveryItemCount, x + 516, y + playerInventory.getHeight() - 70);}
+        final int waterOffset = 25;
+        final int leafOffset = 130;
+        final int stoneOffset = 225;
+        final int poisonOffset = 318;
+        final int invincibilityOffset = 423;
+        final int heartRecoveryOffset = 516;
+        final int allYOffset = 70;
 
+        font.draw(batch, "Water: " + waterCount, x + waterOffset,
+            y + playerInventory.getHeight() - allYOffset);
+        font.draw(batch, "Leaf: " + herbCount, x + leafOffset,
+            y + playerInventory.getHeight() - allYOffset);
+        font.draw(batch, "Stone: " + stoneCount, x + stoneOffset,
+            y + playerInventory.getHeight() - allYOffset);
+        font.draw(batch, "Poison: " + poisonItemCount, x + poisonOffset,
+            y + playerInventory.getHeight() - allYOffset);
+        font.draw(batch, "Hide: " + invincibilityItemCount, x + invincibilityOffset,
+            y + playerInventory.getHeight() - allYOffset);
+        font.draw(batch, "Heart: " + heartRecoveryItemCount, x + heartRecoveryOffset,
+            y + playerInventory.getHeight() - allYOffset);
+    }
+
+    /**
+     * Adds an ingredient based on its type.
+     *
+     * @param type the IngredientType to add
+     * @throws IllegalArgumentException if the expected type is not recognized
+     */
     public void addIngredient(final IngredientType type) {
         switch (type) {
             case WATER:
@@ -144,38 +248,76 @@ public class PlayerInventory {
             case HERB:
                 addHerb();
                 break;
+            default:
+                throw new IllegalArgumentException("Unexpected type: " + type);
         }
     }
 
+    /**
+     * Disposes inventory resources.
+     */
     public void dispose() {
         playerInventory.dispose();
         font.dispose();
     }
 
-    public void setHerbCount(int herbCount) {
+    /**
+     * Sets the herb ingredient count.
+     *
+     * @param herbCount the new herb count
+     */
+    public void setHerbCount(final int herbCount) {
         this.herbCount = herbCount;
     }
 
-    public void setStoneCount(int stoneCount) {
+    /**
+     * Sets the stone ingredient count.
+     *
+     * @param stoneCount the new stone count
+     */
+    public void setStoneCount(final int stoneCount) {
         this.stoneCount = stoneCount;
     }
 
-    public void setPoisonItemCount(int poisonItemCount) {
+    /**
+     * Sets the poison item count.
+     *
+     * @param poisonItemCount the new poison count
+     */
+    public void setPoisonItemCount(final int poisonItemCount) {
         this.poisonItemCount = poisonItemCount;
     }
 
-    public void setInvincibilityItemCount(int invincibilityItemCount) {
+    /**
+     * Sets the invincibility item count.
+     *
+     * @param invincibilityItemCount the new invincibility count
+     */
+    public void setInvincibilityItemCount(final int invincibilityItemCount) {
         this.invincibilityItemCount = invincibilityItemCount;
     }
 
-    public void setHeartRecoveryItemCount(int heartRecoveryItemCount) {
+    /**
+     * Sets the heart recovery item count.
+     *
+     * @param heartRecoveryItemCount the new heart recovery count
+     */
+    public void setHeartRecoveryItemCount(final int heartRecoveryItemCount) {
         this.heartRecoveryItemCount = heartRecoveryItemCount;
     }
 
+    /**
+     * Sets the water ingredient count.
+     *
+     * @param waterCount the new water count
+     */
     public void setWaterCount(final int waterCount) {
         this.waterCount = waterCount;
     }
 
+    /**
+     * Resets the inventory counts.
+     */
     public void reset() {
         waterCount = 0;
         herbCount = 0;
@@ -203,15 +345,15 @@ public class PlayerInventory {
             return false;
         }
 
-        PlayerInventory playerInventory = (PlayerInventory) obj;
-        return Objects.equals(this.herbCount, playerInventory.herbCount)
-            && Objects.equals(this.stoneCount, playerInventory.stoneCount)
-            && Objects.equals(this.waterCount, playerInventory.waterCount)
-            && Objects.equals(this.invincibilityItemCount, playerInventory.invincibilityItemCount)
-            && Objects.equals(this.heartRecoveryItemCount, playerInventory.heartRecoveryItemCount)
-            && Objects.equals(this.poisonItemCount, playerInventory.poisonItemCount)
-            && Objects.equals(this.playerInventory, playerInventory.playerInventory)
-            && Objects.equals(this.font, playerInventory.font);
+        PlayerInventory otherInventory = (PlayerInventory) obj;
+        return Objects.equals(this.herbCount, otherInventory.herbCount)
+            && Objects.equals(this.stoneCount, otherInventory.stoneCount)
+            && Objects.equals(this.waterCount, otherInventory.waterCount)
+            && Objects.equals(this.invincibilityItemCount, otherInventory.invincibilityItemCount)
+            && Objects.equals(this.heartRecoveryItemCount, otherInventory.heartRecoveryItemCount)
+            && Objects.equals(this.poisonItemCount, otherInventory.poisonItemCount)
+            && Objects.equals(this.playerInventory, otherInventory.playerInventory)
+            && Objects.equals(this.font, otherInventory.font);
     }
 
     /**
