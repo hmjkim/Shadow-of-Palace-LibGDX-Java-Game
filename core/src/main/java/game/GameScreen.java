@@ -799,9 +799,8 @@ public class GameScreen implements Screen {
         mapRenderer.setView(camera);
         mapRenderer.render();
 
-        // Optionally, render the Box2D debug lines (comment out if not needed).
         // Renderer our Box2DDebugLines
-        debugRenderer.render(world, camera.combined);
+        // debugRenderer.render(world, camera.combined);
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
