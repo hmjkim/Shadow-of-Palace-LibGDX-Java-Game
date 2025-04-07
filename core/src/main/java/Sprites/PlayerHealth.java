@@ -26,6 +26,14 @@ public class PlayerHealth {
         return instance;
     }
 
+    public float getCurrentHearts() {
+        return currentHearts;
+    }
+
+    public void setCurrentHearts(final float currentHearts) {
+        this.currentHearts = currentHearts;
+    }
+
     public void takeDamage(float damage) {
         this.currentHearts -= damage;
         System.out.println("damage: " + this.currentHearts);
