@@ -1,5 +1,11 @@
 package Sprites;
 
+/**
+ * Enumerates type for royal consort types.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public enum RoyalConsortType {
     GWI_IN("Gwi In",
         "royalconsorts/static/gwi-in-front.png",
@@ -47,25 +53,54 @@ public enum RoyalConsortType {
     private final String regionName;
     private final FrameRegionDimensions[] frameDimensions;
 
-    RoyalConsortType(final String name, final String frontImagePath, final String regionName, final FrameRegionDimensions[] frameDimensions) {
+    /**
+     * Constructs a RoyalConsort type.
+     *
+     * @param name the display name
+     * @param frontImagePath the path to the front image
+     * @param regionName the region name for texture mapping
+     * @param frameDimensions the dimensions for each walking direction
+     */
+    RoyalConsortType(final String name, final String frontImagePath,
+                     final String regionName, final FrameRegionDimensions[] frameDimensions) {
         this.name = name;
         this.frontImagePath = frontImagePath;
         this.regionName = regionName;
         this.frameDimensions = frameDimensions;
     }
 
+    /**
+     * Returns the consort's display name.
+     *
+     * @return the name of the consort
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the path to the consort's front image.
+     *
+     * @return the front image path
+     */
     public String getFrontImagePath() {
         return frontImagePath;
     }
 
+    /**
+     * Returns the consort's region name.
+     *
+     * @return the region name
+     */
     public String getRegionName() {
         return regionName;
     }
 
+    /**
+     * Returns the frame dimensions for the consort.
+     *
+     * @return an array of FrameRegionDimensions for each walking direction
+     */
     public FrameRegionDimensions[] getFrameDimensions() {
         return frameDimensions;
     }
