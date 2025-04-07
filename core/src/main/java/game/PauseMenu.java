@@ -27,6 +27,16 @@ import java.util.Objects;
  * @version 2025
  */
 public class PauseMenu {
+
+    // Class-level constants for layout.
+    private static final int BUTTON_WIDTH = 150;
+    private static final int BUTTON_HEIGHT = 50;
+    private static final int BUTTON_PADDING = 10;
+    private static final int TITLE_FONT_SIZE = 48;
+    private static final float TITLE_PAD_BOTTOM = 20f;
+    private static final float FADE_IN_DURATION = 0.5f;
+    private static final float OVERLAY_OPACITY = 0.6f;
+
     private final Stage stage;
     private final Table table;
     private final Skin skin;
@@ -63,37 +73,48 @@ public class PauseMenu {
      * @throws IllegalArgumentException if the listener is null
      */
     public PauseMenu(final PauseScreenListener listener) {
-        // with extended viewport
+        if (listener == null) {
+            throw new IllegalArgumentException("Listener cannot be null");
+        }
+        // Initialize stage with an ExtendViewport using the current screen dimensions.
         stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create a dark transparent overlay
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0.6f); // black with 60% opacity
-        pixmap.fill();
-        Texture overlayTexture = new Texture(pixmap);
-        pixmap.dispose(); // done with pixmap
+        // Define local constants for overlay creation.
+        final int pixmapWidth = 1;
+        final int pixmapHeight = 1;
+        final float overlayRed = 0f;
+        final float overlayGreen = 0f;
+        final float overlayBlue = 0f;
 
-        Image overlay = new Image(new TextureRegionDrawable(overlayTexture));
-        overlay.setFillParent(true); // cover the whole screen
+        // Create a dark transparent overlay.
+        final Pixmap pixmap = new Pixmap(pixmapWidth, pixmapHeight, Pixmap.Format.RGBA8888);
+        pixmap.setColor(overlayRed, overlayGreen, overlayBlue, OVERLAY_OPACITY);
+        pixmap.fill();
+        final Texture overlayTexture = new Texture(pixmap);
+        pixmap.dispose(); // Release pixmap resources.
+
+        final Image overlay = new Image(new TextureRegionDrawable(overlayTexture));
+        overlay.setFillParent(true); // Cover the entire screen.
 
         table = new Table();
         table.setFillParent(true);
         table.center();
 
-        // Add a title label for the pause menu
-        BitmapFont titleFont = FontManager.generateFont(48, Color.WHITE); // size & color
-
-        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        // Create a title label for the pause menu.
+        final BitmapFont titleFont = FontManager.generateFont(TITLE_FONT_SIZE, Color.WHITE);
+        final Label.LabelStyle titleStyle = new Label.LabelStyle();
         titleStyle.font = titleFont;
+        final Label titleLabel = new Label("Paused", titleStyle);
 
-        Label titleLabel = new Label("Paused", titleStyle);
-
-        table.add(titleLabel).padBottom(20).colspan(2);
+        table.add(titleLabel).padBottom(TITLE_PAD_BOTTOM).colspan(2);
         table.row();
 
-        // Enable debug lines on the table
-        // table.setDebug(true);
+        // Create buttons.
+        final TextButton resumeButton = new TextButton("Resume", skin);
+        final TextButton restartButton = new TextButton("Restart", skin);
+        final TextButton saveButton = new TextButton("Save", skin);
+        final TextButton exitButton = new TextButton("Exit", skin);
 
         // Create buttons
         TextButton resumeButton = new TextButton("Resume", skin);
@@ -104,21 +125,21 @@ public class PauseMenu {
         // Add listeners for each button
         resumeButton.addListener(new ClickListener(){
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 listener.onResume();
             }
         });
 
         restartButton.addListener(new ClickListener(){
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 listener.onRestart();
             }
         });
 
         saveButton.addListener(new ClickListener(){
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 listener.onSave();
             }
         });
@@ -130,14 +151,14 @@ public class PauseMenu {
             }
         });
 
-        // Layout the buttons in the table
-        table.add(resumeButton).pad(10).width(150).height(50);
+        // Layout the buttons in the table.
+        table.add(resumeButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
         table.row();
-        table.add(restartButton).pad(10).width(150).height(50);
+        table.add(restartButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
         table.row();
-        table.add(saveButton).pad(10).width(150).height(50);
+        table.add(saveButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
         table.row();
-        table.add(exitButton).pad(10).width(150).height(50);
+        table.add(exitButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
 
         stage.addActor(overlay);
         stage.addActor(table);
@@ -163,7 +184,7 @@ public class PauseMenu {
         if (visible) {
             // Optionally add a fade-in effect
             table.getColor().a = 0f;
-            table.addAction(Actions.fadeIn(0.5f));
+            table.addAction(Actions.fadeIn(FADE_IN_DURATION));
         }
         System.out.println("Pause Menu: Visible " + visible);
     }
