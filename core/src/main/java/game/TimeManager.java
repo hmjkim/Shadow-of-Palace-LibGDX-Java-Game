@@ -16,12 +16,6 @@ public final class TimeManager {
     private final float dayDuration; // Duration of the day period in seconds
     private final float nightDuration; // Duration of the night period in seconds
 
-    /**
-     * Constructs a TimeManager with the specified dayDuration, nightDuration.
-     *
-     * @param dayDuration a float representing the duration of the day in seconds
-     * @param nightDuration a float representing the duration of the night in seconds
-     */
     private TimeManager(final float dayDuration, final float nightDuration) {
         this.dayDuration = dayDuration;
         this.nightDuration = nightDuration;
