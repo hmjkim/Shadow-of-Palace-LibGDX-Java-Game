@@ -951,6 +951,10 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         font = FontManager.getDefaultFont();
+        if (font == null) {
+            FontManager.initialize();
+            font = FontManager.getDefaultFont();
+        }
         font.setColor(1, 1, 1, 1); // white and opaque
         actionBoxFont = FontManager.generateFont(20, Color.valueOf("c45800"));
         messageFont = FontManager.generateFont(30, Color.WHITE);

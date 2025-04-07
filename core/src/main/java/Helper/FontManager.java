@@ -44,6 +44,7 @@ public class FontManager {
     public static void dispose() {
         if (defaultFont != null) {
             defaultFont.dispose();
+            defaultFont = null;
         }
     }
 }

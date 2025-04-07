@@ -33,6 +33,7 @@ public class MainGame extends Game {
     }
 
     public void startNewGame() {
+        FontManager.initialize();
         // Reset inventory, health and time
         PlayerHealth.getInstance().reset();
         PlayerInventory.getInstance().reset();
