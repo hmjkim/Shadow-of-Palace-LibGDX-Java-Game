@@ -1,9 +1,12 @@
 package Sprites;
 
+import Ingredients.Ingredient;
 import Ingredients.IngredientType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import java.util.Objects;
 
 /**
  * Manages the player's inventory including ingredients and items.
@@ -30,7 +33,7 @@ public class PlayerInventory {
         this.waterCount = 0;
         this.herbCount = 0;
         this.stoneCount = 0;
-        this.poisonItemCount = 100;
+        this.poisonItemCount = 0;
         this.invincibilityItemCount = 0;
         this.heartRecoveryItemCount = 0;
 
@@ -98,9 +101,11 @@ public class PlayerInventory {
     public int getWaterCount() {
         return this.waterCount;
     }
+
     public int getHerbCount() {
         return this.herbCount;
     }
+
     public int getStoneCount() {
         return this.stoneCount;
     }
@@ -114,6 +119,7 @@ public class PlayerInventory {
         this.herbCount -= herbReq;
         this.stoneCount -= stoneReq;
     }
+
     public void drawInventory(SpriteBatch batch, int screenWidth) {
         float x = (screenWidth - playerInventory.getWidth()) / 2f;
         float y = 20;
@@ -166,10 +172,6 @@ public class PlayerInventory {
         this.heartRecoveryItemCount = heartRecoveryItemCount;
     }
 
-    public static void setInstance(PlayerInventory instance) {
-        PlayerInventory.instance = instance;
-    }
-
     public void setWaterCount(final int waterCount) {
         this.waterCount = waterCount;
     }
@@ -183,4 +185,72 @@ public class PlayerInventory {
         heartRecoveryItemCount = 0;
     }
 
+    /**
+     * Determines if the PlayerInventory is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the PlayerInventory is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        PlayerInventory playerInventory = (PlayerInventory) obj;
+        return Objects.equals(this.herbCount, playerInventory.herbCount)
+            && Objects.equals(this.stoneCount, playerInventory.stoneCount)
+            && Objects.equals(this.waterCount, playerInventory.waterCount)
+            && Objects.equals(this.invincibilityItemCount, playerInventory.invincibilityItemCount)
+            && Objects.equals(this.heartRecoveryItemCount, playerInventory.heartRecoveryItemCount)
+            && Objects.equals(this.poisonItemCount, playerInventory.poisonItemCount)
+            && Objects.equals(this.playerInventory, playerInventory.playerInventory)
+            && Objects.equals(this.font, playerInventory.font);
+    }
+
+    /**
+     * Gets the hashcode of the PlayerInventory.
+     *
+     * @return the hashcode of the PlayerInventory as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.waterCount);
+        final int prime = 18;
+        result = prime * result + Objects.hashCode(this.playerInventory);
+        result = prime * result + Objects.hashCode(this.herbCount);
+        result = prime * result + Objects.hashCode(this.stoneCount);
+        result = prime * result + Objects.hashCode(this.poisonItemCount);
+        result = prime * result + Objects.hashCode(this.invincibilityItemCount);
+        result = prime * result + Objects.hashCode(this.heartRecoveryItemCount);
+        result = prime * result + Objects.hashCode(this.font);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the PlayerInventory.
+     *
+     * @return the string representation of the PlayerInventory
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("PlayerInventory {");
+        sb.append("waterCount='").append(this.waterCount).append('\'');
+        sb.append("stoneCount='").append(this.stoneCount).append('\'');
+        sb.append("herbCount='").append(this.herbCount).append('\'');
+        sb.append("poisonItemCount='").append(this.poisonItemCount).append('\'');
+        sb.append("invincibilityItemCount='").append(this.invincibilityItemCount).append('\'');
+        sb.append("heartRecoveryItemCount='").append(this.heartRecoveryItemCount).append('\'');
+        sb.append("playerInventory='").append(this.playerInventory).append('\'');
+        sb.append("font='").append(this.font);
+        sb.append('}');
+        return sb.toString();
+    }
 }
