@@ -4,7 +4,19 @@ import Helper.FontManager;
 import Ingredients.IngredientManager;
 import Manager.GameSaveManager;
 import Manager.GameState;
-import Sprites.*;
+import Sprites.Player;
+import Sprites.PlayerInventory;
+import Sprites.PlayerHealth;
+import Sprites.RoyalConsort;
+import Sprites.RoyalConsortType;
+import Sprites.Direction;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.World;
+import Sprites.FrameRegionDimensions;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -25,18 +37,24 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.utils.Timer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.Random;
+import java.util.Objects;
 
 /**
- * GameScreen sets up the Tiled map, Box2D world, collision objects, player, and camera.
- * It also handles continuous input for movement and renders all elements.
+ * Initializes GameScreen.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
  */
 public class GameScreen implements Screen {
     private static final int INGREDIENT_COUNT = 30;
@@ -97,6 +115,11 @@ public class GameScreen implements Screen {
     private final PauseMenu pauseMenu;
     private final Stage mainStage;
 
+    /**
+     * Constructs a GameScreen with the specified mainGame.
+     *
+     * @param mainGame the MainGame instance
+     */
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
     public GameScreen(final MainGame mainGame) {
@@ -113,11 +136,6 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         // Set up a viewport with the desired size in world units.
         // Convert the desired viewport dimensions (in pixels) to world units.
-//        viewport = new FitViewport(
-//            MainGame.VIEWPORT_WIDTH / MainGame.PIXELS_PER_METER,
-//            MainGame.VIEWPORT_HEIGHT / MainGame.PIXELS_PER_METER,
-//            camera
-//        );
         viewport = new ExtendViewport(
             MainGame.VIEWPORT_WIDTH / MainGame.PIXELS_PER_METER,
             MainGame.VIEWPORT_HEIGHT / MainGame.PIXELS_PER_METER,
@@ -131,7 +149,7 @@ public class GameScreen implements Screen {
         uiCamera.update();
 
         // --- Text ---
-        layout = new GlyphLayout();;
+        layout = new GlyphLayout();
 
         // --- Box2D World Setup ---
         // Create the Box2D world with zero gravity (suitable for a top-down view).
@@ -141,18 +159,21 @@ public class GameScreen implements Screen {
         world.setContactListener(new CollisionListener(this));
 
         // --- Collision Object Setup ---
-        // Parse collision objects from an object layer named "Obstacles" (or "Collision") in the Tiled map.
+        // Parse collision objects from an object layer named
+        // "Obstacles" (or "Collision") in the Tiled map.
         // Ensure your Tiled map has an object layer with rectangle objects that define obstacles.
-        for (MapObject object : map.getLayers().get("Obstacles").getObjects().getByType(RectangleMapObject.class)) {
-            Rectangle rect = ((RectangleMapObject) object).getRectangle();
-            BodyDef bdef = new BodyDef();
-            bdef.type = BodyDef.BodyType.StaticBody;
-            // Position the static body at the center of the rectangle, converting pixels to world units.
-            bdef.position.set(
+        for (RectangleMapObject object
+            : map.getLayers().get("Obstacles").getObjects().getByType(RectangleMapObject.class)) {
+            Rectangle rect = object.getRectangle();
+            BodyDef bodyDef = new BodyDef();
+            bodyDef.type = BodyDef.BodyType.StaticBody;
+            // Position the static body at the center of the rectangle,
+            // converting pixels to world units.
+            bodyDef.position.set(
                 (rect.x + rect.width / 2) / MainGame.PIXELS_PER_METER,
                 (rect.y + rect.height / 2) / MainGame.PIXELS_PER_METER
             );
-            Body body = world.createBody(bdef);
+            Body body = world.createBody(bodyDef);
 
             // Define the shape of the obstacle.
             PolygonShape shape = new PolygonShape();
@@ -161,9 +182,9 @@ public class GameScreen implements Screen {
                 rect.height / 2 / MainGame.PIXELS_PER_METER
             );
 
-            FixtureDef fdef = new FixtureDef();
-            fdef.shape = shape;
-            body.createFixture(fdef);
+            FixtureDef fixtureDef = new FixtureDef();
+            fixtureDef.shape = shape;
+            body.createFixture(fixtureDef);
             shape.dispose();
         }
 
@@ -174,12 +195,13 @@ public class GameScreen implements Screen {
         this.shapeRenderer = new ShapeRenderer();
 
         this.stage = 1;
+        final int startEnemyNumber = 11;
 
         royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();
         consortRemovalQueue = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
-        this.enemyCount = 11;
+        this.enemyCount = startEnemyNumber;
         spawnEnemy();
         spawnRoyalConsorts();
         spawnPlayerBasedOnCurrentRank();
@@ -224,23 +246,31 @@ public class GameScreen implements Screen {
                 pauseMenu.setVisible(false);
                 Gdx.input.setInputProcessor(mainStage);
             }
+
             @Override
             public void onRestart() {
                 game.startNewGame();
             }
+
             @Override
             public void onSave() {
                 saveGameState();
             }
+
             @Override
             public void onExit() {
                 Gdx.app.exit();
             }
-
         });
         pauseMenu.setVisible(false);
     }
 
+    /**
+     * Constructs a GameScreen with the specified mainGame, loadedState.
+     *
+     * @param mainGame the MainGame instance
+     * @param loadedState the loaded GameState
+     */
     public GameScreen(final MainGame mainGame, final GameState loadedState) {
         this(mainGame);  // Call the default constructor to do all initialization
         if (loadedState != null) {
@@ -248,7 +278,13 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void showMessage(String text, Color color) {
+    /**
+     * Displays a system message.
+     *
+     * @param text the message text
+     * @param color the message color
+     */
+    public void showMessage(final String text, final Color color) {
         messageQueue.add(new SystemMessage(text, color));
     }
 
@@ -263,8 +299,7 @@ public class GameScreen implements Screen {
         if (map.getLayers().get("kitchen") != null) {
             MapObjects kitchenObjects = map.getLayers().get("kitchen").getObjects();
             if (!kitchenObjects.getByType(RectangleMapObject.class).isEmpty()) {
-                RectangleMapObject kitchenObj = (RectangleMapObject) kitchenObjects
-                    .getByType(RectangleMapObject.class).first();
+                RectangleMapObject kitchenObj = kitchenObjects.getByType(RectangleMapObject.class).first();
                 Rectangle rect = kitchenObj.getRectangle();
                 kitchenZone = new Rectangle(
                     rect.x / MainGame.PIXELS_PER_METER,
@@ -277,10 +312,11 @@ public class GameScreen implements Screen {
     }
 
     private void handleItemUsageInput() {
+        final float invincibleTime = 20f;
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             if (PlayerInventory.getInstance().getInvincibilityItemCount() >= 1) {
                 PlayerInventory.getInstance().removeInvincibilityItem();
-                player.setInvincible(20f);
+                player.setInvincible(invincibleTime);
                 System.out.println("Invincibility item used");
             } else {
                 System.out.println("No invincibility item available");
@@ -304,37 +340,37 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void scheduleEnemyRemoval(Enemy enemy) {
+    /**
+     * Schedules an enemy for removal.
+     *
+     * @param enemy the enemy to remove
+     */
+    public void scheduleEnemyRemoval(final Enemy enemy) {
         if (!enemyRemovalQueue.contains(enemy)) {
             enemyRemovalQueue.add(enemy);
         }
     }
 
+    /**
+     * Spawns enemies from the Tiled map.
+     */
     private void spawnEnemy() {
         MapObjects enemyObjects = map.getLayers().get("Enemy").getObjects();
         List<MapObject> enemyObjectsList = new ArrayList<>();
         for (MapObject object : enemyObjects.getByType(RectangleMapObject.class)) {
             enemyObjectsList.add(object);
         }
-        Collections.sort(enemyObjectsList, new Comparator<MapObject>() {
-            @Override
-            public int compare(MapObject a, MapObject b) {
-                try {
-                    String nameA = (String) a.getProperties().get("name");
-                    String nameB = (String) b.getProperties().get("name");
-                    if(nameA == null || nameB == null) {
-                        return 0;
-                    }
-                    String numStrA = nameA.replaceAll("[^0-9]", "");
-                    String numStrB = nameB.replaceAll("[^0-9]", "");
-                    int numA = numStrA.isEmpty() ? 0 : Integer.parseInt(numStrA);
-                    int numB = numStrB.isEmpty() ? 0 : Integer.parseInt(numStrB);
-                    return Integer.compare(numA, numB);
-                } catch (Exception e) {
-                    Gdx.app.error("Comparator", "Error comparing enemy names: " + e.getMessage());
-                    return 0;
-                }
+        enemyObjectsList.sort((a, b) -> {
+            String nameA = (String) a.getProperties().get("name");
+            String nameB = (String) b.getProperties().get("name");
+            if (nameA == null || nameB == null) {
+                return 0;
             }
+            String numStrA = nameA.replaceAll("[^0-9]", "");
+            String numStrB = nameB.replaceAll("[^0-9]", "");
+            int numA = numStrA.isEmpty() ? 0 : Integer.parseInt(numStrA);
+            int numB = numStrB.isEmpty() ? 0 : Integer.parseInt(numStrB);
+            return Integer.compare(numA, numB);
         });
 
         npcList.clear();
@@ -348,26 +384,35 @@ public class GameScreen implements Screen {
 
             final int enemyTotalTypes = 4;
             Random random = new Random();
-            int enemyType = random.nextInt(enemyTotalTypes) + 1; // min 1 to max enemy total types
-            String enemyRegionName = "enemy" + enemyType;
+            String enemyRegionName = "enemy" + (random.nextInt(enemyTotalTypes) + 1);
             System.out.println(enemyRegionName);
             FrameRegionDimensions dimensions;
-            switch(enemyType) {
-                case 1:
-                    dimensions = new FrameRegionDimensions(20, 30);
+            final int case1Width = 20;
+            final int case1Height = 30;
+            final int case2Width = 17;
+            final int case2Height = 30;
+            final int case3Width = 21;
+            final int case3Height = 31;
+            final int case4Width = 24;
+            final int case4Height = 32;
+            final int defaultWidth = 20;
+            final int defaultHeight = 30;
+            switch (enemyRegionName) {
+                case "enemy1":
+                    dimensions = new FrameRegionDimensions(case1Width, case1Height);
                     break;
-                case 2:
-                    dimensions = new FrameRegionDimensions(17, 30);
+                case "enemy2":
+                    dimensions = new FrameRegionDimensions(case2Width, case2Height);
                     break;
-                case 3:
-                    dimensions = new FrameRegionDimensions(21, 31);
+                case "enemy3":
+                    dimensions = new FrameRegionDimensions(case3Width, case3Height);
                     break;
-                case 4:
-                    dimensions = new FrameRegionDimensions(24, 32);
+                case "enemy4":
+                    dimensions = new FrameRegionDimensions(case4Width, case4Height);
                     break;
                 default:
                     // Provide a default value
-                    dimensions = new FrameRegionDimensions(20, 30);
+                    dimensions = new FrameRegionDimensions(defaultWidth, defaultHeight);
                     break;
             }
 
@@ -375,6 +420,9 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Spawns royal consorts from the Tiled map.
+     */
     public void spawnRoyalConsorts() {
         MapObjects royalConsortObjects = map.getLayers().get("RoyalConsorts").getObjects();
         for (MapObject object : royalConsortObjects) {
@@ -385,30 +433,40 @@ public class GameScreen implements Screen {
                 String objectName = object.getName();
                 for (RoyalConsortType consortType : RoyalConsortType.values()) {
                     if (consortType.getName().equalsIgnoreCase(objectName)) {
-                        // Check if this consort type is less than or equal to the player's current rank
-                        // If so, skip spawning it because that rank is already occupied or "dead"
+                        // Check if this consort type is less than
+                        // or equal to the player's current rank
+                        // If so, skip spawning it
+                        // because that rank is already occupied or "dead"
                         if (consortType.compareTo(player.getRank()) <= 0) {
                             // Skip this consort
                             break;
                         }
 
-                        // First, calculate the center of the rectangle (in pixels) and convert to world units.
-                        float centerX = (rectangle.x + rectangle.width / 2f) / MainGame.PIXELS_PER_METER;
-                        float centerY = (rectangle.y + rectangle.height / 2f) / MainGame.PIXELS_PER_METER;
+                        // Calculate the center of the rectangle (in pixels)
+                        // and convert to world units.
+                        float centerX = (rectangle.x + rectangle.width / 2f)
+                            / MainGame.PIXELS_PER_METER;
+                        float centerY = (rectangle.y + rectangle.height / 2f)
+                            / MainGame.PIXELS_PER_METER;
 
-                        // Create the texture region for the NPC using the front image file path from the enum.
-                        TextureRegion region = new TextureRegion(new Texture(consortType.getFrontImagePath()));
+                        // Create the texture region for the NPC
+                        // using the front image file path from the enum.
+                        TextureRegion region
+                            = new TextureRegion(new Texture(consortType.getFrontImagePath()));
 
                         // Calculate the sprite's size in world units
                         float spriteWidth = region.getRegionWidth() / MainGame.PIXELS_PER_METER;
                         float spriteHeight = region.getRegionHeight() / MainGame.PIXELS_PER_METER;
 
-                        // Calculate the position so that the sprite is centered on the rectangle
+                        // Calculate the position so that the sprite is centered
+                        // on the rectangle
                         float finalX = centerX - spriteWidth / 2f;
                         float finalY = centerY - spriteHeight / 2f;
 
-                        // Create the RoyalConsort instance with its type and adjusted position
-                        RoyalConsort consort = new RoyalConsort(region, consortType, finalX, finalY);
+                        // Create the RoyalConsort instance with its type
+                        // and adjusted position
+                        RoyalConsort consort
+                            = new RoyalConsort(region, consortType, finalX, finalY);
                         royalConsortList.add(consort);
                         break;
                     }
@@ -417,6 +475,11 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Returns the list of walkable positions.
+     *
+     * @return a list of Vector2 positions for walkable tiles
+     */
     public List<Vector2> getWalkablePositions() {
         List<Vector2> walkablePositions = new ArrayList<>();
 
@@ -432,29 +495,22 @@ public class GameScreen implements Screen {
         return walkablePositions;
     }
 
+    /**
+     * Advances the game to the next stage.
+     */
     public void nextStage() {
         this.stage++;
         enemyCount++;
         spawnEnemy();
     }
 
-    public float getMapWidth() {
-        int mapWidthInTiles = map.getProperties().get("width", Integer.class);
-        int tilePixelWidth = map.getProperties().get("tilewidth", Integer.class);
-        return (mapWidthInTiles * tilePixelWidth) / MainGame.PIXELS_PER_METER;
-    }
-
-    public float getMapHeight() {
-        int mapHeightInTiles = map.getProperties().get("height", Integer.class);
-        int tilePixelHeight = map.getProperties().get("tileheight", Integer.class);
-        return (mapHeightInTiles * tilePixelHeight) / MainGame.PIXELS_PER_METER;
-    }
-
     /**
-     * Update game logic: handle input, step physics simulation, update player, and move camera.
+     * Updates the game logic.
+     *
+     * @param delta the time elapsed since the last frame
      */
-    public void update(float delta) {
-        handleInput(delta);
+    public void update(final float delta) {
+        handleInput();
 
         // if state is paused, don't proceed with update
         if (isPaused) {
@@ -470,7 +526,9 @@ public class GameScreen implements Screen {
         // Remove expired messages
         messageQueue.removeIf(message -> message.update(delta));
 
-        world.step(1 / 60f, 6, 2);
+        final float divideNum = 60f;
+        final int velocityIterations = 6;
+        world.step(1 / divideNum, velocityIterations, 2);
         if (!enemyRemovalQueue.isEmpty()) {
             for (Enemy enemy : enemyRemovalQueue) {
                 enemy.onPlayerCollision();
@@ -482,12 +540,15 @@ public class GameScreen implements Screen {
         Vector2 playerPos = player.getBody().getPosition();
 
         // Collect a nearby ingredient when SPACE is pressed
+        final float threshold = 0.3f;
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            ingredientManager.collectNearbyIngredient(playerPos, 0.3f, PlayerInventory.getInstance());
+            ingredientManager.collectNearbyIngredient(playerPos,
+                threshold, PlayerInventory.getInstance());
         }
 
         // If less than 70% of the ingredients remain, replenish to the original amount.
-        if (ingredientManager.getIngredients().size < INGREDIENT_COUNT * 0.7f) {
+        final float checkPercent = 0.7f;
+        if (ingredientManager.getIngredients().size < INGREDIENT_COUNT * checkPercent) {
             ingredientManager.resupplyIngredients(INGREDIENT_COUNT);
         }
 
@@ -511,8 +572,9 @@ public class GameScreen implements Screen {
 
         // --- Clamp the camera position ---
         // Calculate half viewport dimensions (in world units)
-        float halfViewportWidth = camera.viewportWidth * 0.5f;
-        float halfViewportHeight = camera.viewportHeight * 0.5f;
+        final float cameraOffset = 0.5f;
+        float halfViewportWidth = camera.viewportWidth * cameraOffset;
+        float halfViewportHeight = camera.viewportHeight * cameraOffset;
 
         // Retrieve map dimensions from properties
         int mapWidthInTiles = map.getProperties().get("width", Integer.class);
@@ -520,11 +582,14 @@ public class GameScreen implements Screen {
         int tilePixelWidth = map.getProperties().get("tilewidth", Integer.class);
         int tilePixelHeight = map.getProperties().get("tileheight", Integer.class);
         float mapWidth = (mapWidthInTiles * tilePixelWidth) / MainGame.PIXELS_PER_METER;
-        float mapHeight = (mapHeightInTiles * tilePixelHeight) / MainGame.PIXELS_PER_METER;
+        float mapHeight = (mapHeightInTiles * tilePixelHeight)
+            / MainGame.PIXELS_PER_METER;
 
         // Clamp the camera's x and y values
-        float camX = Math.max(halfViewportWidth, Math.min(camera.position.x, mapWidth - halfViewportWidth));
-        float camY = Math.max(halfViewportHeight, Math.min(camera.position.y, mapHeight - halfViewportHeight));
+        float camX = Math.max(halfViewportWidth,
+            Math.min(camera.position.x, mapWidth - halfViewportWidth));
+        float camY = Math.max(halfViewportHeight,
+            Math.min(camera.position.y, mapHeight - halfViewportHeight));
         camera.position.set(camX, camY, 0);
 
         camera.update();
@@ -534,6 +599,11 @@ public class GameScreen implements Screen {
         handlePoisonInput();
     }
 
+    /**
+     * Returns the atlas for royal consorts.
+     *
+     * @return the TextureAtlas for royal consorts
+     */
     public TextureAtlas getAtlas() {
         return atlas;
     }
@@ -569,7 +639,7 @@ public class GameScreen implements Screen {
         System.out.println("Game saved!");
     }
 
-    private void applyGameState(GameState state) {
+    private void applyGameState(final GameState state) {
         // Set the player's position
         player.getBody().setTransform(state.getPlayerXPosition(), state.getPlayerYPosition(), 0);
 
@@ -582,7 +652,8 @@ public class GameScreen implements Screen {
         // Update player's health (make sure you have a setter in PlayerHealth)
         PlayerHealth.getInstance().setCurrentHearts(state.getPlayerHealth());
 
-        // Update inventory counts (you'll need to add setters in your PlayerInventory if they don't exist yet)
+        // Update inventory counts (you'll need to add setters
+        // in your PlayerInventory if they don't exist yet)
         PlayerInventory inventory = PlayerInventory.getInstance();
         inventory.setWaterCount(state.getWaterCount());
         inventory.setHerbCount(state.getHerbCount());
@@ -591,7 +662,8 @@ public class GameScreen implements Screen {
         inventory.setInvincibilityItemCount(state.getInvincibilityCount());
         inventory.setHeartRecoveryItemCount(state.getHeartRecoveryCount());
 
-        // Now that the player’s rank is updated, filter out any consorts that should not be present.
+        // Now that the player’s rank is updated,
+        // filter out any consorts that should not be present.
         filterRoyalConsorts();
 
         recalculateRoyalConsortsAndNextTarget();
@@ -624,8 +696,9 @@ public class GameScreen implements Screen {
             Gdx.app.log("GameScreen", "Player is at the highest rank. No next target.");
         }
 
-        Gdx.app.log("GameScreen", "Player appearance updated to " + currentRank +
-            ". Next target: " + (nextTarget != null ? nextTarget.getName() : "None"));
+        assert nextTarget != null;
+        Gdx.app.log("GameScreen", "Player appearance updated to " + currentRank
+            + ". Next target: " + nextTarget.getName());
     }
 
     private void filterRoyalConsorts() {
@@ -659,13 +732,15 @@ public class GameScreen implements Screen {
                             // If the player just became the Queen, show Game Over
                             if (consort.getType() == RoyalConsortType.QUEEN) {
                                 showMessage("You are now the Queen!", Color.GOLD);
-                                System.out.println("Player has become the Queen! Transitioning in 2 seconds...");
+                                System.out.println("Player has become the Queen!"
+                                    + "Transitioning in 2 seconds...");
 
                                 // move to end screen after 2seconds delay
                                 Timer.schedule(new Timer.Task() {
                                     @Override
                                     public void run() {
-                                        game.setScreen(new EndScreen(game, "The Throne Is Yours!", Color.GOLD));
+                                        game.setScreen(new EndScreen(game,
+                                            "The Throne Is Yours!", Color.GOLD));
                                     }
                                 }, 2f);
 
@@ -673,10 +748,12 @@ public class GameScreen implements Screen {
                             }
 
                             System.out.println("Poisoned " + consort.getType().getName());
-                            showMessage("Poisoned " + consort.getType().getName() + "!", Color.SCARLET);
+                            showMessage("Poisoned "
+                                + consort.getType().getName() + "!", Color.SCARLET);
                         } else {
                             System.out.println("Wrong target! Lose 1 heart.");
-                            showMessage("You tried to kill the wrong concubine! -1 heart", Color.RED);
+                            showMessage("You tried to kill"
+                                + "the wrong concubine! -1 heart", Color.RED);
                             PlayerHealth.getInstance().takeDamage(1);
                         }
                         break; // Only poison one at a time
@@ -705,9 +782,9 @@ public class GameScreen implements Screen {
         } else {
             // For Gwi In, retrieve the tile directly from the map
             MapObjects consortObjects = map.getLayers().get("RoyalConsorts").getObjects();
-            for (MapObject object : consortObjects.getByType(RectangleMapObject.class)) {
+            for (RectangleMapObject object : consortObjects.getByType(RectangleMapObject.class)) {
                 if (initialRank.getName().equalsIgnoreCase(object.getName())) {
-                    Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                    Rectangle rect = object.getRectangle();
                     float spawnX = (rect.x + rect.width / 2f) / MainGame.PIXELS_PER_METER;
                     float spawnY = (rect.y + rect.height / 2f) / MainGame.PIXELS_PER_METER;
                     player.getBody().setTransform(spawnX, spawnY, 0);
@@ -724,15 +801,16 @@ public class GameScreen implements Screen {
         }
     }
 
-    /**
-     * Handle continuous input by setting the player's velocity directly.
-     */
-    private void handleInput(float delta) {
+    private void handleInput() {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             isPaused = !isPaused; // Toggle pause flag
             pauseMenu.setVisible(isPaused);
-            Gdx.input.setInputProcessor(isPaused ? pauseMenu.getStage() : mainStage);
+            if (isPaused) {
+                Gdx.input.setInputProcessor(pauseMenu.getStage());
+            } else {
+                Gdx.input.setInputProcessor(mainStage);
+            }
         }
 
         if (!isPaused) {
@@ -765,19 +843,29 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Returns the player.
+     *
+     * @return the Player instance
+     */
     public Player getPlayer() {
         return player;
     }
 
-    private Vector2 worldToScreenCoordinates(Vector2 worldPos) {
+    private Vector2 worldToScreenCoordinates(final Vector2 worldPos) {
         Vector3 temporaryVector3 = new Vector3(worldPos.x, worldPos.y, 0);
         camera.project(temporaryVector3); // Converts from world → screen coordinates
         return new Vector2(temporaryVector3.x, temporaryVector3.y);
     }
 
 
+    /**
+     * Renders the game.
+     *
+     * @param delta the time elapsed since the last frame
+     */
     @Override
-    public void render(float delta) {
+    public void render(final float delta) {
 
         if (!isPaused) {
             // Update game logic
@@ -833,7 +921,8 @@ public class GameScreen implements Screen {
         boolean isNight = !TimeManager.getInstance().getIsDayTime();
         for (RoyalConsort consort : royalConsortList) {
             if (consort.shouldShowActionText() && isNight) {
-                Vector2 screenCenter = worldToScreenCoordinates(consort.getActionBoxCenterWorldPosition());
+                Vector2 screenCenter
+                    = worldToScreenCoordinates(consort.getActionBoxCenterWorldPosition());
 
                 String actionText = "Press [X] to Poison";
                 layout.setText(actionBoxFont, actionText);
@@ -854,73 +943,87 @@ public class GameScreen implements Screen {
         );
         float plusHeightLength = 0f;
         float plusWidthLength = 0f;
+        final float widthTextBox = 55f;
+        final float heightTextBox = 100f;
+        final float startNum = 150;
         if (kitchen != null) {
             Vector2 playerPos = player.getBody().getPosition();
             boolean isInKitchen = kitchen.contains(playerPos.x, playerPos.y);
             kitchen.setShowText(isInKitchen);
             final String recipeText = "              Recipe\n";
             final String requiredIngredient = String.format("water: %d, Rock: %d, Leaf: %d",
-                MysteryBox.getInstance().getWaterRequired(), MysteryBox.getInstance().getRockRequired(),
+                MysteryBox.getInstance().getWaterRequired(),
+                MysteryBox.getInstance().getRockRequired(),
                 MysteryBox.getInstance().getLeafRequired());
             if (isInKitchen) {
                 if (TimeManager.getInstance().getIsDayTime()) {
                     kitchen.setMessage("Only available at night");
                 } else {
                     if (hasAllIngredients) {
-                        kitchen.setMessage("      " + recipeText + "       " + requiredIngredient +
-                            "\n\n<Press [M] to Craft Mystery Box>");
-                        plusWidthLength = 55f;
+                        kitchen.setMessage("      " + recipeText + "       " + requiredIngredient
+                            + "\n\n<Press [M] to Craft Mystery Box>");
+                        plusWidthLength = widthTextBox;
                     } else {
-                        kitchen.setMessage(recipeText + "  " + requiredIngredient + "\n\n<Not enough ingredients!>");
+                        kitchen.setMessage(recipeText + "  "
+                            + requiredIngredient + "\n\n<Not enough ingredients!>");
                     }
-                    plusHeightLength = 100f;
+                    plusHeightLength = heightTextBox;
                 }
             } else {
                 kitchen.setMessage("");
             }
 
-            kitchen.draw(game.batch, camera, actionBoxFont, layout, plusHeightLength, plusWidthLength);
+            kitchen.draw(game.batch, camera, actionBoxFont,
+                layout, plusHeightLength, plusWidthLength);
         }
 
         // Rank HUD
         String titleText = "Current Rank: " + player.getRank().getName(); // e.g., "Gwi In"
         layout.setText(font, titleText);
+        final int yOffset = 140;
 
-        float x = 30; // Left padding
-        float y = Gdx.graphics.getHeight() - 140; // Top padding from screen
+        final float x = 30; // Left padding
+        float y = Gdx.graphics.getHeight() - yOffset; // Top padding from screen
 
         font.draw(game.batch, layout, x, y);
 
+        final int positionYOffset = 10;
         //Display remained time when player is invincible
         if (player.isInvincible()) {
-            String invText = "Invincible: " + String.format("%.0f", player.getInvincibilityTimeRemaining()) + " sec";
+            String invText = "Invincible: "
+                + String.format("%.0f", player.getInvincibilityTimeRemaining())
+                + " sec";
             layout.setText(font, invText);
-            float positionY = y - layout.height - 10;
+            float positionY = y - layout.height - positionYOffset;
             font.draw(game.batch, layout, x, positionY);
         }
 
         // System Message
-        float messageY = 150; // Start position from bottom
+        float messageY = startNum; // Start position from bottom
+        final int messageYOffset = 10;
 
         for (SystemMessage msg : messageQueue) {
             Color original = messageFont.getColor();
-            messageFont.setColor(msg.getColor().r, msg.getColor().g, msg.getColor().b, msg.getAlpha());
+            messageFont.setColor(msg.getColor().r,
+                msg.getColor().g, msg.getColor().b, msg.getAlpha());
 
             layout.setText(messageFont, msg.getText());
             float messageX = (Gdx.graphics.getWidth() - layout.width) / 2;
             messageFont.draw(game.batch, layout, messageX, messageY);
 
-            messageY += layout.height + 10; // stack vertically
+            messageY += layout.height + messageYOffset; // stack vertically
             messageFont.setColor(original); // Reset
         }
 
         RoyalConsortType currentTarget = getCurrentTarget();
+        final int iconXOffset = 20;
+        final int iconYOffset = 10;
         if (currentTarget != null) {
             Texture icon = targetIcons.get(currentTarget);
-            float iconWidth = 200;
-            float iconHeight = 200;
-            float iconX = Gdx.graphics.getWidth() - iconWidth - 20;
-            float iconY = Gdx.graphics.getHeight() - iconHeight - 10;
+            final float iconWidth = 200;
+            final float iconHeight = 200;
+            float iconX = Gdx.graphics.getWidth() - iconWidth - iconXOffset;
+            float iconY = Gdx.graphics.getHeight() - iconHeight - iconYOffset;
 
             game.batch.draw(icon, iconX, iconY, iconWidth, iconHeight);
         }
@@ -928,13 +1031,14 @@ public class GameScreen implements Screen {
         game.batch.end();
 
         // Night overlay
+        final float colorA = 0.3f;
         if (!TimeManager.getInstance().getIsDayTime()) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
             shapeRenderer.setProjectionMatrix(uiCamera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(0, 0, 0, 0.3f);
+            shapeRenderer.setColor(0, 0, 0, colorA);
             shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             shapeRenderer.end();
 
@@ -946,8 +1050,14 @@ public class GameScreen implements Screen {
         }
     }
 
+    /**
+     * Resizes the game screen.
+     *
+     * @param width the new screen width in pixels
+     * @param height the new screen height in pixels
+     */
     @Override
-    public void resize(int width, int height) {
+    public void resize(final int width, final int height) {
         // Update the viewport when the window size changes.
         viewport.update(width, height);
         uiCamera.setToOrtho(false, width, height);
@@ -955,34 +1065,52 @@ public class GameScreen implements Screen {
 
         // Update the stage's viewport on resize
         pauseMenu.getStage().getViewport().update(width, height, true);
-        // update mainstage in the background as well(when pause menu pops up)
+        // update main stage in the background as well(when pause menu pops up)
         mainStage.getViewport().update(width, height, true);
     }
 
+    /**
+     * Displays the game screen.
+     */
     @Override
     public void show() {
         font = FontManager.getDefaultFont();
+        final int actionBoxFontSize = 20;
+        final int messageFontSize = 30;
         if (font == null) {
             FontManager.initialize();
             font = FontManager.getDefaultFont();
         }
         font.setColor(1, 1, 1, 1); // white and opaque
-        actionBoxFont = FontManager.generateFont(20, Color.valueOf("c45800"));
-        messageFont = FontManager.generateFont(30, Color.WHITE);
+        actionBoxFont = FontManager.generateFont(actionBoxFontSize,
+            Color.valueOf("c45800"));
+        messageFont = FontManager.generateFont(messageFontSize, Color.WHITE);
     }
 
+    /**
+     * Hides the game screen.
+     */
     @Override
     public void hide() {
     }
 
+    /**
+     * Pauses the game screen.
+     */
     @Override
     public void pause() {
     }
 
+    /**
+     * Resumes the game screen.
+     */
     @Override
     public void resume() {
     }
 
+    /**
+     * Disposes game resources.
+     */
     @Override
     public void dispose() {
         // Dispose all disposable resources.
