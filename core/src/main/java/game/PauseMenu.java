@@ -18,22 +18,52 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
+import java.util.Objects;
 
+/**
+ * Displays the pause menu overlay for the game.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class PauseMenu {
-    private Stage stage;
-    private Table table;
-    private Skin skin;
+    private final Stage stage;
+    private final Table table;
+    private final Skin skin;
 
-    // Callback interfaces for the buttons
+    /**
+     * Callback interface for pause menu actions.
+     */
     public interface PauseScreenListener {
+        /**
+         * Resumes the game.
+         */
         void onResume();
+
+        /**
+         * Restarts the game.
+         */
         void onRestart();
+
+        /**
+         * Saves the current game state.
+         */
         void onSave();
+
+        /**
+         * Exits the game.
+         */
         void onExit();
     }
 
-    public PauseMenu(PauseScreenListener listener) {
-        // with extendedviewport
+    /**
+     * Creates a PauseMenu with the specified listener.
+     *
+     * @param listener the listener for pause menu actions
+     * @throws IllegalArgumentException if the listener is null
+     */
+    public PauseMenu(final PauseScreenListener listener) {
+        // with extended viewport
         stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
@@ -113,11 +143,21 @@ public class PauseMenu {
         stage.addActor(table);
     }
 
+    /**
+     * Gets the Stage used by the pause menu.
+     *
+     * @return the Stage instance
+     */
     public Stage getStage() {
         return stage;
     }
 
-    public void setVisible(boolean visible) {
+    /**
+     * Sets the visibility of the pause menu.
+     *
+     * @param visible true to display the pause menu, false to hide it
+     */
+    public void setVisible(final boolean visible) {
 
         table.setVisible(visible);
         if (visible) {
@@ -128,15 +168,26 @@ public class PauseMenu {
         System.out.println("Pause Menu: Visible " + visible);
     }
 
+    /**
+     * Disposes of resources used by the pause menu.
+     */
     public void dispose() {
         stage.dispose();
         skin.dispose();
     }
 
-    public void act(float delta) {
+    /**
+     * Updates the pause menu stage.
+     *
+     * @param delta the time in seconds since the last update
+     */
+    public void act(final float delta) {
         stage.act(delta);
     }
 
+    /**
+     * Draws the pause menu stage.
+     */
     public void draw() {
         stage.draw();
     }
