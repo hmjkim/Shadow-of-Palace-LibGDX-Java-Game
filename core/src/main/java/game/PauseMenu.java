@@ -140,4 +140,53 @@ public class PauseMenu {
     public void draw() {
         stage.draw();
     }
+
+    /**
+     * Determines if the PauseMenu is equal to another object.
+     *
+     * @param object the object to compare
+     * @return true if the PauseMenu is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        PauseMenu pauseMenu = (PauseMenu) object;
+        return Objects.equals(getStage(), pauseMenu.getStage())
+            && Objects.equals(table, pauseMenu.table)
+            && Objects.equals(skin, pauseMenu.skin);
+    }
+
+    /**
+     * Gets the hashcode of the PauseMenu.
+     *
+     * @return the hashcode of the PauseMenu as an integer
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = Objects.hashCode(getStage());
+        result = prime * result + Objects.hashCode(table);
+        result = prime * result + Objects.hashCode(skin);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the PauseMenu.
+     *
+     * @return the string representation of the PauseMenu
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PauseMenu{");
+        sb.append("stage=").append(stage);
+        sb.append(", table=").append(table);
+        sb.append(", skin=").append(skin);
+        sb.append('}');
+        return sb.toString();
+    }
 }
