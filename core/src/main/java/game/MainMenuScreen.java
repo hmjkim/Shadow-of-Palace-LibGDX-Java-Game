@@ -1,12 +1,14 @@
 package game;
 
+import Helper.FontManager;
 import Manager.GameSaveManager;
 import Manager.GameState;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -21,7 +23,10 @@ public class MainMenuScreen implements Screen {
     public MainMenuScreen(MainGame game) {
         this.game = game;
         stage = new Stage();
+    }
 
+    @Override
+    public void show() {
         Gdx.input.setInputProcessor(stage);
 
         // Load a default skin
@@ -30,6 +35,14 @@ public class MainMenuScreen implements Screen {
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
+
+        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        titleStyle.font = FontManager.generateFont(64, Color.WHITE);
+        Label titleLabel = new Label("Shadow of Palace", titleStyle);
+        titleLabel.setFontScale(1.2f);
+
+        table.add(titleLabel).padBottom(40).colspan(2);
+        table.row();
 
         // Create "Start" and "Exit" buttons
         TextButton startButton = new TextButton("Start", skin);
@@ -53,7 +66,7 @@ public class MainMenuScreen implements Screen {
         });
 
         // Add buttons to the table with some padding
-        table.add(startButton).pad(10);
+        table.add(startButton).pad(10).width(150);
         table.row();
 
         // Create a Load button
@@ -71,13 +84,9 @@ public class MainMenuScreen implements Screen {
             }
         });
 
-        table.add(loadButton).pad(10);
+        table.add(loadButton).pad(10).width(150);
         table.row();
-        table.add(exitButton).pad(10);
-    }
-
-    @Override
-    public void show() {
+        table.add(exitButton).pad(10).width(150);
     }
 
     @Override
