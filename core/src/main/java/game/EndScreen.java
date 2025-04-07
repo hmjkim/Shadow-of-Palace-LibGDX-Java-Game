@@ -24,6 +24,13 @@ import java.util.Objects;
  */
 public class EndScreen implements Screen {
 
+    private static final int TITLE_FONT_SIZE = 50;
+    private static final float TITLE_FONT_SCALE = 2f;
+    private static final int BUTTON_WIDTH = 150;
+    private static final int BUTTON_HEIGHT = 50;
+    private static final int BUTTON_PADDING = 10;
+    private static final int TITLE_PAD = 20;
+
     private final MainGame game;
     private final Stage stage;
     private final Skin skin;
@@ -63,9 +70,9 @@ public class EndScreen implements Screen {
 
         // Create title label using FontManager
         Label.LabelStyle titleStyle = new Label.LabelStyle();
-        titleStyle.font = FontManager.generateFont(50, titleColor);
+        titleStyle.font = FontManager.generateFont(TITLE_FONT_SIZE, titleColor);
         Label titleLabel = new Label(titleMessage, titleStyle);
-        titleLabel.setFontScale(2f);
+        titleLabel.setFontScale(TITLE_FONT_SCALE);
 
         // Create Restart and Exit buttons using the skin
         TextButton restartButton = new TextButton("Restart", skin);
@@ -74,7 +81,7 @@ public class EndScreen implements Screen {
         // Add listeners for button clicks
         restartButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 Gdx.app.log("EndScreen", "Restart button clicked!");
                 game.startNewGame();
             }
@@ -82,18 +89,18 @@ public class EndScreen implements Screen {
 
         exitButton.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void clicked(final InputEvent event, final float x, final float y) {
                 Gdx.app.exit();
             }
         });
 
         titleLabel.setAlignment(Align.center);
         // Arrange UI elements in the table
-        table.add(titleLabel).pad(20);
+        table.add(titleLabel).pad(TITLE_PAD);
         table.row();
-        table.add(restartButton).pad(10).width(150).height(50);
+        table.add(restartButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
         table.row();
-        table.add(exitButton).pad(10).width(150).height(50);
+        table.add(exitButton).pad(BUTTON_PADDING).width(BUTTON_WIDTH).height(BUTTON_HEIGHT);
     }
 
     /**
@@ -102,7 +109,7 @@ public class EndScreen implements Screen {
      * @param delta the time in seconds since the last frame
      */
     @Override
-    public void render(float delta) {
+    public void render(final float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
@@ -116,7 +123,7 @@ public class EndScreen implements Screen {
      * @param height the new screen height in pixels
      */
     @Override
-    public void resize(int width, int height) {
+    public void resize(final int width, final int height) {
         stage.getViewport().update(width, height, true);
     }
 
