@@ -5,14 +5,20 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.Objects;
 
-public class PlayerHealth {
+/**
+ * Manages player health.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
+public final class PlayerHealth {
     private static final int MAX_HEARTS = 5;
+    private static PlayerHealth instance;
+
     private float currentHearts;
     private final Texture fullHeart;
     private final Texture halfHeart;
     private final Texture emptyHeart;
-
-    private static PlayerHealth instance;
 
     private PlayerHealth() {
         currentHearts = MAX_HEARTS;
@@ -21,6 +27,11 @@ public class PlayerHealth {
         emptyHeart = new Texture("heart/empty-heart.png");
     }
 
+    /**
+     * Returns the singleton instance.
+     *
+     * @return the PlayerHealth instance
+     */
     public static PlayerHealth getInstance() {
         if (instance == null) {
             instance = new PlayerHealth();
@@ -28,15 +39,30 @@ public class PlayerHealth {
         return instance;
     }
 
+    /**
+     * Returns the current heart value.
+     *
+     * @return the current hearts
+     */
     public float getCurrentHearts() {
         return currentHearts;
     }
 
+    /**
+     * Sets the current heart value.
+     *
+     * @param currentHearts the new heart value
+     */
     public void setCurrentHearts(final float currentHearts) {
         this.currentHearts = currentHearts;
     }
 
-    public void takeDamage(float damage) {
+    /**
+     * Applies damage to the player.
+     *
+     * @param damage the damage amount
+     */
+    public void takeDamage(final float damage) {
         this.currentHearts -= damage;
         System.out.println("damage: " + this.currentHearts);
         if (this.currentHearts <= 0) {
@@ -47,40 +73,65 @@ public class PlayerHealth {
         }
     }
 
-    public void heal(float amount) {
+    /**
+     * Heals the player.
+     *
+     * @param amount the healing amount
+     */
+    public void heal(final float amount) {
         currentHearts += amount;
-        if (currentHearts > MAX_HEARTS)
+        if (currentHearts > MAX_HEARTS) {
             currentHearts = MAX_HEARTS;
+        }
     }
 
-    public void drawHearts(SpriteBatch batch, int screenHeight) {
-        int padding = 5;
+    /**
+     * Draws the heart icons on the screen.
+     *
+     * @param batch the SpriteBatch for rendering
+     * @param screenHeight the height of the screen in pixels
+     */
+    public void drawHearts(final SpriteBatch batch, final int screenHeight) {
+        final int padding = 5;
         float heartWidth = fullHeart.getWidth();
         float heartHeight = fullHeart.getHeight();
-        float x = padding + 20;
-        float y = screenHeight - heartHeight - padding - 20;
+        final int offset = 20;
+        float x = padding + offset;
+        float y = screenHeight - heartHeight - padding - offset;
 
         for (int i = 0; i < MAX_HEARTS; i++) {
             float drawX = x + i * (heartWidth + padding);
+            // Draw a full heart if within the integer part of currentHearts.
             if (i < (int) currentHearts) {
                 batch.draw(fullHeart, drawX, y);
             } else if (i < currentHearts) {
+                // Draw a half heart if the slot is less than currentHearts (but not full).
                 batch.draw(halfHeart, drawX, y);
             } else {
+                // Draw an empty heart.
                 batch.draw(emptyHeart, drawX, y);
             }
         }
     }
 
+    /**
+     * Disposes of heart textures.
+     */
     public void dispose() {
         fullHeart.dispose();
         halfHeart.dispose();
     }
 
+    /**
+     * Triggers game over.
+     */
     public void gameOver() {
         System.out.println("Game Over");
     }
 
+    /**
+     * Resets the player's health.
+     */
     public void reset() {
         currentHearts = MAX_HEARTS;
     }
@@ -118,7 +169,7 @@ public class PlayerHealth {
     @Override
     public int hashCode() {
         int result = Objects.hashCode(this.currentHearts);
-        final int prime = 11;
+        final int prime = 15;
         result = prime * result + Objects.hashCode(this.fullHeart);
         result = prime * result + Objects.hashCode(this.halfHeart);
         result = prime * result + Objects.hashCode(this.emptyHeart);

@@ -81,13 +81,13 @@ public class Ingredient extends Sprite {
     @Override
     public String toString() {
         final StringBuilder sb;
-        sb = new StringBuilder("Ingredient{");
+        sb = new StringBuilder("Ingredient {");
         sb.append("regionHeight='").append(this.getRegionHeight()).append('\'');
         sb.append("regionWidth='").append(this.getRegionWidth()).append('\'');
         sb.append("regionHeightY='").append(this.getRegionY()).append('\'');
         sb.append("regionHeightX='").append(this.getRegionX()).append('\'');
         sb.append("ingredientType='").append(this.getType());
         sb.append('}');
-        return sb.toString();
+        return super.toString() + sb;
     }
 }
