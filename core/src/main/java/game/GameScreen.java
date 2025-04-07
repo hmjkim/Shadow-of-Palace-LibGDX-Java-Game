@@ -230,7 +230,7 @@ public class GameScreen implements Screen {
             }
             @Override
             public void onRestart() {
-                game.setScreen(new GameScreen(game));
+                game.startNewGame();
             }
             @Override
             public void onSave() {

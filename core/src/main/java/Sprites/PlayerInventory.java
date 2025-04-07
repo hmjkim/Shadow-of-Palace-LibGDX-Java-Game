@@ -175,4 +175,14 @@ public class PlayerInventory {
     public void setWaterCount(final int waterCount) {
         this.waterCount = waterCount;
     }
+
+    public void reset() {
+        waterCount = 0;
+        herbCount = 0;
+        stoneCount = 0;
+        poisonItemCount = 0;
+        invincibilityItemCount = 0;
+        heartRecoveryItemCount = 0;
+    }
+
 }

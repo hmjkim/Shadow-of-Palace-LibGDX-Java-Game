@@ -78,4 +78,8 @@ public class PlayerHealth {
     public void gameOver() {
         System.out.println("Game Over");
     }
+
+    public void reset() {
+        currentHearts = MAXHEARTS;
+    }
 }
