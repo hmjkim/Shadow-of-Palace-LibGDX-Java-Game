@@ -1,7 +1,16 @@
 package Sprites;
 
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.World;
 import game.GameScreen;
 import game.MainGame;
 import com.badlogic.gdx.utils.Array;
@@ -10,9 +19,10 @@ import game.TimeManager;
 import java.util.Objects;
 
 /**
- * The Player class represents the player character.
- * It creates a dynamic Box2D body for collision and physics,
- * loads the player image, and updates its sprite position accordingly.
+ * Represents the player.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
  */
 public class Player extends Sprite {
     // Constants for your sprite sheet grid
@@ -37,11 +47,12 @@ public class Player extends Sprite {
     private float invincibilityTimer;
 
     /**
-     * Constructs the player, loads the image, and creates its Box2D body.
+     * Constructs a Player with the specified world, screen.
      *
-     * @param world The Box2D world to which the player's body is added.
+     * @param world the Box2D world to which the player's body is added.
+     * @param screen the GameScreen providing assets and context
      */
-    public Player(World world, GameScreen screen) {
+    public Player(final World world, final GameScreen screen) {
         super(screen.getAtlas().findRegion(RoyalConsortType.GWI_IN.getRegionName()));
         this.world = world;
         this.screen = screen;
@@ -51,33 +62,36 @@ public class Player extends Sprite {
         direction = Direction.SOUTH;
         this.invincible = false;
         this.invincibilityTimer = 0f;
-        // --- Load Player Image ---
-        // Load the player's texture. Ensure "player.png" is in your assets folder.
-        // texture = new Texture("player.png");
-        // Set the texture as the sprite region.
-        // setRegion(texture);
-        // Set sprite size based on conversion from pixels to Box2D world units.
-        // setSize(texture.getWidth() / MainGame.PIXELS_PER_METER, texture.getHeight() / MainGame.PIXELS_PER_METER);
         // Set the origin for rotations and scaling.
         setOriginCenter();
         // --- Create the Player's Physics Body ---
         definePlayer();
 
-        // Setup spritesheet
+        // Setup sprite sheet
         updateAppearance(RoyalConsortType.GWI_IN, screen.getAtlas());
 
     }
 
+    /**
+     * Returns the player's rank.
+     *
+     * @return the RoyalConsortType representing the player's rank
+     */
     public RoyalConsortType getRank() {
         return rank;
     }
 
-    public void setRank(RoyalConsortType rank) {
+    /**
+     * Sets the player's rank.
+     *
+     * @param rank the new RoyalConsortType for the player
+     */
+    public void setRank(final RoyalConsortType rank) {
         this.rank = rank;
     }
 
-
-    private TextureRegion getSpriteFrame(final int row, final int col, final FrameRegionDimensions dimensions) {
+    private TextureRegion getSpriteFrame(final int row, final int col,
+                                         final FrameRegionDimensions dimensions) {
 
         // Get the base region of the current character
         TextureRegion baseRegion = screen.getAtlas().findRegion(rank.getRegionName());
@@ -94,52 +108,75 @@ public class Player extends Sprite {
         return new TextureRegion(baseRegion.getTexture(), x, y, frameWidth, frameHeight);
     }
 
-    public void setInvincible(float time) {
+    /**
+     * Sets the player's invincibility.
+     *
+     * @param time the duration of invincibility in seconds
+     */
+    public void setInvincible(final float time) {
         invincible = true;
         invincibilityTimer = time;
     }
 
+    /**
+     * Returns whether the player is invincible.
+     *
+     * @return true if invincible; false otherwise
+     */
     public boolean isInvincible() {
         return invincible;
     }
 
+    /**
+     * Returns the remaining invincibility time.
+     *
+     * @return the remaining invincibility time in seconds
+     */
     public float getInvincibilityTimeRemaining() {
         return invincibilityTimer;
     }
 
-    /**
-     * Creates the Box2D dynamic body for the player, including collision shape and fixture.
-     * Sets the starting position to (100, 100) pixels (converted to world units).
-     */
     private void definePlayer() {
-        BodyDef bdef = new BodyDef();
-        bdef.type = BodyDef.BodyType.DynamicBody;
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
         // Set the initial position (convert from pixels to world units).
-        bdef.position.set(150 / MainGame.PIXELS_PER_METER, 160 / MainGame.PIXELS_PER_METER);
-        body = world.createBody(bdef);
+        final int pixel1 = 150;
+        final int pixel2 = 160;
+        final float frictionValue = 0.5f;
+        bodyDef.position.set(pixel1 / MainGame.PIXELS_PER_METER,
+            pixel2 / MainGame.PIXELS_PER_METER);
+        body = world.createBody(bodyDef);
 
         // --- Define Collision Shape ---
         // Create a circular shape for the player's collision.
         CircleShape shape = new CircleShape();
-        int shapeRadius = 7;
+        final int shapeRadius = 7;
         shape.setRadius(shapeRadius / MainGame.PIXELS_PER_METER);
 
         // Create a fixture definition with density and friction.
-        FixtureDef fdef = new FixtureDef();
-        fdef.shape = shape;
-        fdef.density = 1f;
-        fdef.friction = 0.5f;
-        Fixture fixture = body.createFixture(fdef);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1f;
+        fixtureDef.friction = frictionValue;
+        Fixture fixture = body.createFixture(fixtureDef);
         fixture.setUserData(this);
         // Dispose the shape after use.
         shape.dispose();
 
         // --- Add Linear Damping ---
         // This helps the player slow down when no input is given.
-        body.setLinearDamping(3f);
+        final float linearDamping = 3f;
+        body.setLinearDamping(linearDamping);
     }
 
-    public void updateAppearance(final RoyalConsortType newRank, final TextureAtlas concubineAtlas) {
+    /**
+     * Updates the player's appearance.
+     *
+     * @param newRank the new RoyalConsortType for the player
+     * @param concubineAtlas the texture atlas containing the sprite sheet
+     */
+    public void updateAppearance(final RoyalConsortType newRank,
+                                 final TextureAtlas concubineAtlas) {
         setRank(newRank);
 
         // Get the base region for the new rank
@@ -147,7 +184,8 @@ public class Player extends Sprite {
         setRegion(newBase); // fallback if animations fail
 
         if (newBase == null) {
-            System.out.println("Player atlas region for " + newRank.getRegionName() + " not found!");
+            System.out.println("Player atlas region for "
+                + newRank.getRegionName() + " not found!");
             return;
         }
         // Set the new animations
@@ -157,15 +195,17 @@ public class Player extends Sprite {
         Array<TextureRegion> framesRight = new Array<>();
         Array<TextureRegion> framesDown = new Array<>();
 
-        for (int col = 0; col < 3; col++) {
+        final int colLimit = 3;
+        for (int col = 0; col < colLimit; col++) {
             framesWalkUp.add(getSpriteFrame(0, col, dimensions[0]));
             framesRight.add(getSpriteFrame(1, col, dimensions[1]));
             framesDown.add(getSpriteFrame(2, col, dimensions[2]));
         }
 
-        walkUp = new Animation<>(0.1f, framesWalkUp, Animation.PlayMode.LOOP);
-        walkRight = new Animation<>(0.1f, framesRight, Animation.PlayMode.LOOP);
-        walkDown = new Animation<>(0.1f, framesDown, Animation.PlayMode.LOOP);
+        final float frameDuration = 0.1f;
+        walkUp = new Animation<>(frameDuration, framesWalkUp, Animation.PlayMode.LOOP);
+        walkRight = new Animation<>(frameDuration, framesRight, Animation.PlayMode.LOOP);
+        walkDown = new Animation<>(frameDuration, framesDown, Animation.PlayMode.LOOP);
         playerStand = getSpriteFrame(2, 1, dimensions[2]);
 
         // Update sprite size
@@ -180,7 +220,7 @@ public class Player extends Sprite {
      *
      * @param delta The time elapsed since the last frame.
      */
-    public void update(float delta) {
+    public void update(final float delta) {
         if (invincible) {
             invincibilityTimer -= delta;
             if (invincibilityTimer <= 0f) {
@@ -194,7 +234,7 @@ public class Player extends Sprite {
         );
 
         // If the player is walking, increase stateTimer; otherwise, reset it.
-        if(getState() == State.WALKING) {
+        if (getState() == State.WALKING) {
             stateTimer += delta;
         } else {
             stateTimer = 0;
@@ -204,6 +244,11 @@ public class Player extends Sprite {
         setRegion(getFrame());
     }
 
+    /**
+     * Retrieves the current animation frame.
+     *
+     * @return the current TextureRegion frame
+     */
     public TextureRegion getFrame() {
         // Determine current state
         currentState = getState();
@@ -213,7 +258,7 @@ public class Player extends Sprite {
         if (currentState == State.STANDING) {
             region = playerStand;  // Assume playerStand is the down-facing idle frame.
         } else {  // Walking state
-            switch(direction) {
+            switch (direction) {
                 case NORTH:
                     region = walkUp.getKeyFrame(stateTimer, true);
                     break;
@@ -235,24 +280,34 @@ public class Player extends Sprite {
                     break;
                 default:
                     region = playerStand;
-                    break;
             }
         }
         return region;
     }
 
-    public void setDirection(Direction dir) {
+    /**
+     * Sets the player's movement direction.
+     *
+     * @param dir the new Direction for movement
+     */
+    public void setDirection(final Direction dir) {
         this.direction = dir;
     }
 
-
+    /**
+     * Determines the player's state based on body velocity.
+     *
+     * @return State.WALKING if moving
+     */
     public State getState() {
         // Check if the overall speed is above a small threshold
-        if (body.getLinearVelocity().len() > 0.1f)
+        final float speed = 0.1f;
+        if (body.getLinearVelocity().len() > speed) {
             return State.WALKING;
+        } else {
             //if none of these return then player must be standing
-        else
             return State.STANDING;
+        }
     }
 
     /**
@@ -264,18 +319,31 @@ public class Player extends Sprite {
         return body;
     }
 
+    /**
+     * Draws the player sprite.
+     *
+     * @param batch the SpriteBatch used for drawing
+     */
     @Override
-    public void draw(Batch batch) {
+    public void draw(final Batch batch) {
         // Draw the sprite (player image) using the current sprite batch.
         super.draw(batch);
     }
 
+    /**
+     * Applies damage to the player upon collision with an enemy.
+     */
     public void hitByNPC() {
         if (isInvincible()) {
             return;
         }
 
-        float damage = TimeManager.getInstance().getIsDayTime() ? 0.5f : 1.0f;
+        float damage = 1.0f;
+        final float dayTimeDamage = 0.5f;
+        if (TimeManager.getInstance().getIsDayTime()) {
+            damage = dayTimeDamage;
+        }
+
         System.out.println("Collision happened");
         PlayerHealth.getInstance().takeDamage(damage);
     }
