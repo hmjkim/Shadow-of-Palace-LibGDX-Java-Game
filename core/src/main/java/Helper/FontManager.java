@@ -12,19 +12,25 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
  * @author Zoey Lee, Heather Kim
  * @version 2025
  */
-public class FontManager {
+public final class FontManager {
 
     private static BitmapFont defaultFont;
+
+    private FontManager() {
+    }
 
     /**
      * Initializes the default font.
      */
     // Load the font once when the game starts
     public static void initialize() {
+        final int adjustedFontSize = 24;
+
         if (defaultFont == null) {
-            FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/upheaval.ttf"));
+            FreeTypeFontGenerator generator
+                = new FreeTypeFontGenerator(Gdx.files.internal("font/upheaval.ttf"));
             FreeTypeFontParameter parameter = new FreeTypeFontParameter();
-            parameter.size = 24; // Set the adjusted font size
+            parameter.size = adjustedFontSize; // Set the adjusted font size
             defaultFont = generator.generateFont(parameter); // Generate the font
             generator.dispose(); // Dispose the generator after creating the font
         }
@@ -50,7 +56,8 @@ public class FontManager {
      * @return a newly generated BitmapFont
      */
     public static BitmapFont generateFont(final int size, final Color color) {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/upheaval.ttf"));
+        FreeTypeFontGenerator generator
+            = new FreeTypeFontGenerator(Gdx.files.internal("font/upheaval.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.size = size;
         parameter.color = color;
