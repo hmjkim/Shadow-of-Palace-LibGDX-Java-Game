@@ -341,18 +341,66 @@ public class Enemy extends Sprite {
         pendingRespawn = true;
     }
 
+    /**
+     * Determines if the Enemy is equal to another object.
+     *
+     * @param object the object to compare
+     * @return true if the Enemy is equal to the other object, false otherwise
+     */
     @Override
     public boolean equals(Object object) {
-        if (object == null || getClass() != object.getClass()) return false;
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
         Enemy enemy = (Enemy) object;
-        return Float.compare(stateTimer, enemy.stateTimer) == 0 && Float.compare(chaseTimer, enemy.chaseTimer) == 0 && isChasing == enemy.isChasing && isPendingRespawn() == enemy.isPendingRespawn() && Objects.equals(world, enemy.world) && Objects.equals(body, enemy.body) && Objects.equals(scatterDirection, enemy.scatterDirection) && Objects.equals(spawnPos, enemy.spawnPos) && Objects.equals(dimensions, enemy.dimensions) && Objects.equals(walkUp, enemy.walkUp) && Objects.equals(walkRight, enemy.walkRight) && Objects.equals(walkDown, enemy.walkDown) && Objects.equals(currentFrame, enemy.currentFrame);
+        return Float.compare(stateTimer, enemy.stateTimer) == 0
+            && Float.compare(chaseTimer, enemy.chaseTimer) == 0
+            && isChasing == enemy.isChasing
+            && isPendingRespawn() == enemy.isPendingRespawn()
+            && Objects.equals(world, enemy.world)
+            && Objects.equals(body, enemy.body)
+            && Objects.equals(scatterDirection, enemy.scatterDirection)
+            && Objects.equals(spawnPos, enemy.spawnPos)
+            && Objects.equals(dimensions, enemy.dimensions)
+            && Objects.equals(walkUp, enemy.walkUp)
+            && Objects.equals(walkRight, enemy.walkRight)
+            && Objects.equals(walkDown, enemy.walkDown)
+            && Objects.equals(currentFrame, enemy.currentFrame);
     }
 
+    /**
+     * Gets the hashcode of the Enemy.
+     *
+     * @return the hashcode of the Enemy as an integer
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(world, body, stateTimer, chaseTimer, isChasing, scatterDirection, spawnPos, isPendingRespawn(), dimensions, walkUp, walkRight, walkDown, currentFrame);
+        final int prime = 31;
+        int result = Objects.hashCode(world);
+        result = prime * result + Objects.hashCode(body);
+        result = prime * result + Float.hashCode(stateTimer);
+        result = prime * result + Float.hashCode(chaseTimer);
+        result = prime * result + Boolean.hashCode(isChasing);
+        result = prime * result + Objects.hashCode(scatterDirection);
+        result = prime * result + Objects.hashCode(spawnPos);
+        result = prime * result + Boolean.hashCode(isPendingRespawn());
+        result = prime * result + Objects.hashCode(dimensions);
+        result = prime * result + Objects.hashCode(walkUp);
+        result = prime * result + Objects.hashCode(walkRight);
+        result = prime * result + Objects.hashCode(walkDown);
+        result = prime * result + Objects.hashCode(currentFrame);
+        result = prime * result + super.hashCode();
+        return result;
     }
 
+    /**
+     * Gets the string representation of the Enemy.
+     *
+     * @return the string representation of the Enemy
+     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Enemy{");
