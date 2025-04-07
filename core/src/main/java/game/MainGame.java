@@ -32,6 +32,21 @@ public class MainGame extends Game {
     public MainGame() {
     }
 
+    public void startNewGame() {
+        // Reset inventory, health and time
+        PlayerHealth.getInstance().reset();
+        PlayerInventory.getInstance().reset();
+        TimeManager.getInstance().reset(); // if you have this method
+
+        if (getScreen() != null) {
+            getScreen().dispose();
+        }
+
+        // Create a brand-new GameScreen
+        setScreen(new GameScreen(this));
+    }
+
+
     /**
      * Sets the initial screen
      */
