@@ -81,7 +81,7 @@ public class Ingredient extends Sprite {
     @Override
     public String toString() {
         final StringBuilder sb;
-        sb = new StringBuilder("Ingredient{");
+        sb = new StringBuilder("Ingredient {");
         sb.append("regionHeight='").append(this.getRegionHeight()).append('\'');
         sb.append("regionWidth='").append(this.getRegionWidth()).append('\'');
         sb.append("regionHeightY='").append(this.getRegionY()).append('\'');
