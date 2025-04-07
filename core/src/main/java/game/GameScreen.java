@@ -57,7 +57,7 @@ import java.util.Objects;
  * @version 2025
  */
 public class GameScreen implements Screen {
-    private static final int INGREDIENT_COUNT = 30;
+    private static final int INGREDIENT_COUNT = 10;
     // Contains the Tiled map data.
     private final TiledMap map;
     // Renders the loaded map to the actual screen.
@@ -195,7 +195,7 @@ public class GameScreen implements Screen {
         this.shapeRenderer = new ShapeRenderer();
 
         this.stage = 1;
-        final int startEnemyNumber = 11;
+        final int startEnemyNumber = 16;
 
         royalConsortList = new ArrayList<>();
         npcList = new ArrayList<>();

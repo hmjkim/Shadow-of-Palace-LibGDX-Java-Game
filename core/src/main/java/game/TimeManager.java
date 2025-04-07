@@ -29,8 +29,8 @@ public final class TimeManager {
      * @return the TimeManager instance
      */
     public static TimeManager getInstance() {
-        final float dayDuration = 180;
-        final float nightDuration = 180;
+        final float dayDuration = 90;
+        final float nightDuration = 90;
         if (instance == null) {
             instance = new TimeManager(dayDuration, nightDuration); // each period lasts 3 minutes
         }
