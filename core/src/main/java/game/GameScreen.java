@@ -226,7 +226,7 @@ public class GameScreen implements Screen {
         targetIcons = new HashMap<>();
         targetIcons.put(RoyalConsortType.SUK_WON, new Texture("target/target-sukwon.png"));
         targetIcons.put(RoyalConsortType.SUK_BIN, new Texture("target/target-sukbin.png"));
-        targetIcons.put(RoyalConsortType.BIN,    new Texture("target/target-bin.png"));
+        targetIcons.put(RoyalConsortType.BIN, new Texture("target/target-bin.png"));
         targetIcons.put(RoyalConsortType.QUEEN, new Texture("target/target-queen.png"));
 
         // Spawn ingredients spread over the walkable area
@@ -416,7 +416,7 @@ public class GameScreen implements Screen {
                     break;
             }
 
-            npcList.add(new Enemy(world, this, enemyAtlas, spawnPos, enemyRegionName, dimensions));
+            npcList.add(new Enemy(world, enemyAtlas, spawnPos, enemyRegionName, dimensions));
         }
     }
 
@@ -441,38 +441,40 @@ public class GameScreen implements Screen {
                             // Skip this consort
                             break;
                         }
-
                         // Calculate the center of the rectangle (in pixels)
                         // and convert to world units.
-                        float centerX = (rectangle.x + rectangle.width / 2f)
-                            / MainGame.PIXELS_PER_METER;
-                        float centerY = (rectangle.y + rectangle.height / 2f)
-                            / MainGame.PIXELS_PER_METER;
-
-                        // Create the texture region for the NPC
-                        // using the front image file path from the enum.
-                        TextureRegion region
-                            = new TextureRegion(new Texture(consortType.getFrontImagePath()));
-
-                        // Calculate the sprite's size in world units
-                        float spriteWidth = region.getRegionWidth() / MainGame.PIXELS_PER_METER;
-                        float spriteHeight = region.getRegionHeight() / MainGame.PIXELS_PER_METER;
-
-                        // Calculate the position so that the sprite is centered
-                        // on the rectangle
-                        float finalX = centerX - spriteWidth / 2f;
-                        float finalY = centerY - spriteHeight / 2f;
-
-                        // Create the RoyalConsort instance with its type
-                        // and adjusted position
-                        RoyalConsort consort
-                            = new RoyalConsort(region, consortType, finalX, finalY);
+                        RoyalConsort consort = getRoyalConsort(consortType, rectangle);
                         royalConsortList.add(consort);
                         break;
                     }
                 }
             }
         }
+    }
+
+    private static RoyalConsort getRoyalConsort(RoyalConsortType consortType, Rectangle rectangle) {
+        float centerX = (rectangle.x + rectangle.width / 2f)
+            / MainGame.PIXELS_PER_METER;
+        float centerY = (rectangle.y + rectangle.height / 2f)
+            / MainGame.PIXELS_PER_METER;
+
+        // Create the texture region for the NPC
+        // using the front image file path from the enum.
+        TextureRegion region
+            = new TextureRegion(new Texture(consortType.getFrontImagePath()));
+
+        // Calculate the sprite's size in world units
+        float spriteWidth = region.getRegionWidth() / MainGame.PIXELS_PER_METER;
+        float spriteHeight = region.getRegionHeight() / MainGame.PIXELS_PER_METER;
+
+        // Calculate the position so that the sprite is centered
+        // on the rectangle
+        float finalX = centerX - spriteWidth / 2f;
+        float finalY = centerY - spriteHeight / 2f;
+
+        // Create the RoyalConsort instance with its type
+        // and adjusted position
+        return new RoyalConsort(region, consortType, finalX, finalY);
     }
 
     /**
