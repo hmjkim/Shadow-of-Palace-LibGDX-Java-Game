@@ -1,10 +1,19 @@
 package game;
 
 import Sprites.FrameRegionDimensions;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.RayCastCallback;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
@@ -94,12 +103,12 @@ public class Enemy extends Sprite {
         final int shapeRadius = 7;
         shape.setRadius(shapeRadius / MainGame.PIXELS_PER_METER);
 
+        final int maskBit = 0xFFFF;
+
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
         fixtureDef.friction = FRICTION_RATE;
-
-        final int maskBit = 0xFFFF;
         fixtureDef.filter.categoryBits = 0x0002;
         fixtureDef.filter.maskBits = (short) (maskBit & ~(0x0002));
         body.createFixture(fixtureDef).setUserData(this);
@@ -185,10 +194,12 @@ public class Enemy extends Sprite {
                 scatterDirection.setZero();
             }
         } else {
+            // If current scatter direction is zero, choose a new direction.
             if (scatterDirection.len2() < THRESHOLD) {
                 scatterDirection = chooseRandomUnblockedDirection(allEnemies);
                 stateTimer = 0f;
             } else {
+                // Update direction at regular intervals.
                 if (stateTimer >= RANDOM_MOVE_INTERVAL) {
                     scatterDirection = chooseRandomUnblockedDirection(allEnemies);
                     stateTimer = 0f;
@@ -217,14 +228,18 @@ public class Enemy extends Sprite {
         };
         List<Vector2> validDirections = new ArrayList<>();
 
+        // For each candidate, check both conditions at once.
         for (Vector2 dir : candidates) {
-            if (!isBlockedDirection(dir)) {
-                validDirections.add(dir);
-            }
-            if (!isTooCloseToOtherEnemies(dir, allEnemies)) {
+            if (!isBlockedDirection(dir) && !isTooCloseToOtherEnemies(dir, allEnemies)) {
                 validDirections.add(dir);
             }
         }
+
+        // If no valid direction is found, fallback to a random normalized direction.
+        if (validDirections.isEmpty()) {
+            return getRandomDirection();
+        }
+        // Return one random valid direction.
         return validDirections.get(MathUtils.random(validDirections.size() - 1));
     }
 
@@ -254,7 +269,6 @@ public class Enemy extends Sprite {
         if (body == null) {
             return false;
         }
-
         final float nextPosScalar = 0.5f;
         Vector2 myPos = body.getPosition();
         Vector2 nextPos = myPos.cpy().add(dir.cpy().scl(nextPosScalar));
@@ -266,7 +280,6 @@ public class Enemy extends Sprite {
             if (e.isPendingRespawn()) {
                 continue;
             }
-
             Vector2 otherPos = e.getBodyPosition();
             float dist = nextPos.dst(otherPos);
             if (dist < DESIRED_ENEMY_DISTANCE) {
@@ -425,8 +438,7 @@ public class Enemy extends Sprite {
      */
     @Override
     public String toString() {
-        final StringBuilder sb;
-        sb = new StringBuilder("Enemy{");
+        final StringBuilder sb = new StringBuilder("Enemy{");
         sb.append("world=").append(world);
         sb.append(", body=").append(body);
         sb.append(", stateTimer=").append(stateTimer);
