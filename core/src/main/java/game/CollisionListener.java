@@ -41,14 +41,12 @@ public class CollisionListener implements ContactListener {
             if (!player.isInvincible()) {
                 player.hitByNPC();
                 screen.scheduleEnemyRemoval((Enemy) userDataB);
-                ((Enemy) userDataB).onPlayerCollision();
             }
         } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
             Player player = (Player) userDataB;
             if (!player.isInvincible()) {
                 player.hitByNPC();
                 screen.scheduleEnemyRemoval((Enemy) userDataA);
-                ((Enemy) userDataA).onPlayerCollision();
             }
         }
     }
