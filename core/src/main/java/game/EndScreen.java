@@ -149,4 +149,59 @@ public class EndScreen implements Screen {
         stage.dispose();
         skin.dispose();
     }
+
+    /**
+     * Determines if the EndScreen is equal to another object.
+     *
+     * @param object the object to compare
+     * @return true if the EndScreen is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        EndScreen endScreen = (EndScreen) object;
+        return Objects.equals(game, endScreen.game)
+            && Objects.equals(stage, endScreen.stage)
+            && Objects.equals(skin, endScreen.skin)
+            && Objects.equals(titleMessage, endScreen.titleMessage)
+            && Objects.equals(titleColor, endScreen.titleColor);
+    }
+
+    /**
+     * Gets the hashcode of the EndScreen.
+     *
+     * @return the hashcode of the EndScreen as an integer
+     */
+    @Override
+    public final int hashCode() {
+        final int prime = 31;
+        int result = Objects.hashCode(game);
+        result = prime * result + Objects.hashCode(stage);
+        result = prime * result + Objects.hashCode(skin);
+        result = prime * result + Objects.hashCode(titleMessage);
+        result = prime * result + Objects.hashCode(titleColor);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the EndScreen.
+     *
+     * @return the string representation of the EndScreen
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("EndScreen{");
+        sb.append("game=").append(game);
+        sb.append(", stage=").append(stage);
+        sb.append(", skin=").append(skin);
+        sb.append(", titleMessage='").append(titleMessage).append('\'');
+        sb.append(", titleColor=").append(titleColor);
+        sb.append('}');
+        return sb.toString();
+    }
 }
