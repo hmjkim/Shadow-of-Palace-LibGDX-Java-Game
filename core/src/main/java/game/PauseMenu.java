@@ -40,7 +40,7 @@ public class PauseMenu {
         table.row();
 
         // Enable debug lines on the table
-        table.setDebug(true);
+        // table.setDebug(true);
 
         // Create buttons
         TextButton resumeButton = new TextButton("Resume", skin);

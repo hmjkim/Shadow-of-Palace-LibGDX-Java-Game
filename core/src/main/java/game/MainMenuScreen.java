@@ -5,6 +5,7 @@ import Manager.GameSaveManager;
 import Manager.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -69,23 +70,20 @@ public class MainMenuScreen implements Screen {
         table.add(startButton).pad(10).width(150);
         table.row();
 
-        // Create a Load button
-        TextButton loadButton = new TextButton("Load", skin);
-        loadButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                GameState loadedState = GameSaveManager.loadGame();
-                if (loadedState == null) {
-                    Gdx.app.error("MainMenuScreen", "No saved game found! Starting a new game.");
-                    game.setScreen(new GameScreen(game));
-                } else {
-                    game.setScreen(new GameScreen(game, loadedState)); // new game with saved state
-                }
-            }
-        });
+        GameState loadedState = GameSaveManager.loadGame();
+        if (loadedState != null) {
+            // Create a Load button
+            TextButton loadButton = new TextButton("Load", skin);
+            table.add(loadButton).pad(10).width(150);
+            table.row();
 
-        table.add(loadButton).pad(10).width(150);
-        table.row();
+            loadButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                        game.setScreen(new GameScreen(game, loadedState)); // new game with saved state                 }
+                }
+            });
+        }
         table.add(exitButton).pad(10).width(150);
     }
 
