@@ -35,7 +35,7 @@ public class RoyalConsort extends Sprite {
     private float deathTimer;
 
     /**
-     * Constructs a RoyalConsort with its front view image.
+     * Constructs a RoyalConsort with the specified values.
      *
      * @param region the consort's front view image.
      * @param type the consort's type and rank.
