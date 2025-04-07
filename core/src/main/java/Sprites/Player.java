@@ -7,23 +7,24 @@ import game.MainGame;
 import com.badlogic.gdx.utils.Array;
 import game.TimeManager;
 
+import java.util.Objects;
+
 /**
  * The Player class represents the player character.
  * It creates a dynamic Box2D body for collision and physics,
  * loads the player image, and updates its sprite position accordingly.
  */
 public class Player extends Sprite {
-    private RoyalConsortType rank;
-
     // Constants for your sprite sheet grid
     private static final int CELL_WIDTH = 25; // 25 pixels per cell in width
     private static final int CELL_HEIGHT = 30; // 30 pixels per cell in height
 
+    private RoyalConsortType rank;
     private State currentState;
     private final World world;
     private Body body;
     private final GameScreen screen;
-    // private final Texture texture;
+
     // Animation
     private TextureRegion playerStand;
     private Animation<TextureRegion> walkUp;
@@ -279,10 +280,88 @@ public class Player extends Sprite {
         PlayerHealth.getInstance().takeDamage(damage);
     }
 
-//    /**
-//     * Dispose of the player's texture.
-//     */
-//    public void dispose() {
-//        texture.dispose();
-//    }
+    /**
+     * Determines if the Player is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the Player is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        Player player = (Player) obj;
+        return super.equals(obj) && Objects.equals(this.rank, player.rank)
+            && Objects.equals(this.currentState, player.currentState)
+            && Objects.equals(this.world, player.world)
+            && Objects.equals(this.body, player.body)
+            && Objects.equals(this.screen, player.screen)
+            && Objects.equals(this.playerStand, player.playerStand)
+            && Objects.equals(this.walkUp, player.walkUp)
+            && Objects.equals(this.walkDown, player.walkDown)
+            && Objects.equals(this.walkRight, player.walkRight)
+            && Objects.equals(this.stateTimer, player.stateTimer)
+            && Objects.equals(this.direction, player.direction)
+            && Objects.equals(this.invincible, player.invincible)
+            && Objects.equals(this.invincibilityTimer, player.invincibilityTimer);
+    }
+
+    /**
+     * Gets the hashcode of the Player.
+     *
+     * @return the hashcode of the Player as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.rank);
+        final int prime = 19;
+        result = prime * result + Objects.hashCode(this.currentState);
+        result = prime * result + Objects.hashCode(this.world);
+        result = prime * result + Objects.hashCode(this.body);
+        result = prime * result + Objects.hashCode(this.screen);
+        result = prime * result + Objects.hashCode(this.playerStand);
+        result = prime * result + Objects.hashCode(this.walkDown);
+        result = prime * result + Objects.hashCode(this.walkRight);
+        result = prime * result + Objects.hashCode(this.walkUp);
+        result = prime * result + Objects.hashCode(this.stateTimer);
+        result = prime * result + Objects.hashCode(this.direction);
+        result = prime * result + Objects.hashCode(this.invincible);
+        result = prime * result + Objects.hashCode(this.invincibilityTimer);
+        result = prime * result + super.hashCode();
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the Player.
+     *
+     * @return the string representation of the Player
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("Player {");
+        sb.append("rank='").append(this.rank).append('\'');
+        sb.append("currentState='").append(this.currentState).append('\'');
+        sb.append("world='").append(this.world).append('\'');
+        sb.append("body='").append(this.body).append('\'');
+        sb.append("screen='").append(this.screen).append('\'');
+        sb.append("playerStand='").append(this.playerStand).append('\'');
+        sb.append("walkDown='").append(this.walkDown).append('\'');
+        sb.append("walkRight='").append(this.walkRight).append('\'');
+        sb.append("walkUp='").append(this.walkUp).append('\'');
+        sb.append("stateTimer='").append(this.stateTimer).append('\'');
+        sb.append("direction='").append(this.direction).append('\'');
+        sb.append("invincibilityTimer='").append(this.invincibilityTimer).append('\'');
+        sb.append("invincible='").append(this.invincible);
+        sb.append('}');
+        return super.toString() + sb;
+    }
 }
