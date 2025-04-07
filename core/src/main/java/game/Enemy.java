@@ -18,8 +18,6 @@ import java.util.Objects;
  * @version 2025
  */
 public class Enemy extends Sprite {
-    private final World world;
-    private Body body;
 
     private static final float CONSTANT_SPEED = 1.0f;
     private static final float RANDOM_MOVE_INTERVAL = 3.5f;
@@ -28,7 +26,11 @@ public class Enemy extends Sprite {
     private static final float MIN_RESPAWN_DISTANCE = 2.5f;
     private static final float DESIRED_ENEMY_DISTANCE = 1.0f;
     private static final float CHECK_DISTANCE = 3.0f;
+    private static final float THRESHOLD = 0.0001f;
+    private static final float FRICTION_RATE = 0.5f;
 
+    private final World world;
+    private Body body;
     private float stateTimer;
     private float chaseTimer;
     private boolean isChasing;
@@ -54,7 +56,9 @@ public class Enemy extends Sprite {
      * @param dimensions the frame dimensions for the enemy animation
      */
     public Enemy(final World world, final TextureAtlas atlas,
-                 Vector2 spawnPos, String regionName, FrameRegionDimensions dimensions) {
+                 final Vector2 spawnPos,
+                 final String regionName,
+                 final FrameRegionDimensions dimensions) {
         super(atlas.findRegion(regionName));
         this.world = world;
         this.dimensions = dimensions;
@@ -79,7 +83,7 @@ public class Enemy extends Sprite {
     /*
      * Creates the physics body for the enemy at the given position.
      */
-    private void createBody(Vector2 pos) {
+    private void createBody(final Vector2 pos) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(pos);
@@ -87,15 +91,17 @@ public class Enemy extends Sprite {
         body = world.createBody(bodyDef);
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(7 / MainGame.PIXELS_PER_METER);
+        final int shapeRadius = 7;
+        shape.setRadius(shapeRadius / MainGame.PIXELS_PER_METER);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
-        fixtureDef.friction = 0.5f;
+        fixtureDef.friction = FRICTION_RATE;
 
+        final int maskBit = 0xFFFF;
         fixtureDef.filter.categoryBits = 0x0002;
-        fixtureDef.filter.maskBits = (short)(0xFFFF & ~(0x0002));
+        fixtureDef.filter.maskBits = (short) (maskBit & ~(0x0002));
         body.createFixture(fixtureDef).setUserData(this);
         shape.dispose();
     }
@@ -103,8 +109,8 @@ public class Enemy extends Sprite {
     /*
      * Sets up animations for the enemy using the provided texture region.
      */
-    private void setupAnimation(TextureRegion region) {
-        int columns = 3;
+    private void setupAnimation(final TextureRegion region) {
+        final int columns = 3;
 
         Array<TextureRegion> framesUp = new Array<>();
         Array<TextureRegion> framesRight = new Array<>();
@@ -121,14 +127,15 @@ public class Enemy extends Sprite {
             framesRight.add(new TextureRegion(region.getTexture(), x, yRight,
                 dimensions.getFrameWidth(), dimensions.getFrameHeight()));
 
-            int yDown = region.getRegionY() + dimensions.getFrameHeight()*2;
+            int yDown = region.getRegionY() + dimensions.getFrameHeight() * 2;
             framesDown.add(new TextureRegion(region.getTexture(), x, yDown,
                 dimensions.getFrameWidth(), dimensions.getFrameHeight()));
         }
 
-        walkUp = new Animation<>(0.15f, framesUp, Animation.PlayMode.LOOP);
-        walkRight = new Animation<>(0.15f, framesRight, Animation.PlayMode.LOOP);
-        walkDown = new Animation<>(0.15f, framesDown, Animation.PlayMode.LOOP);
+        final float duration = 0.15f;
+        walkUp = new Animation<>(duration, framesUp, Animation.PlayMode.LOOP);
+        walkRight = new Animation<>(duration, framesRight, Animation.PlayMode.LOOP);
+        walkDown = new Animation<>(duration, framesDown, Animation.PlayMode.LOOP);
     }
 
     /**
@@ -138,7 +145,8 @@ public class Enemy extends Sprite {
      * @param playerPosition the player's current position in world units
      * @param allEnemies a list of all enemies for collision avoidance
      */
-    public void update(float delta, Vector2 playerPosition, List<Enemy> allEnemies) {
+    public void update(final float delta, final Vector2 playerPosition,
+                       final List<Enemy> allEnemies) {
         if (pendingRespawn) {
             if (playerPosition.dst(spawnPos) >= MIN_RESPAWN_DISTANCE) {
                 createBody(spawnPos);
@@ -159,13 +167,12 @@ public class Enemy extends Sprite {
                 chaseTimer = 0f;
             }
         }
-
         Vector2 velocityVec = new Vector2();
 
         if (isChasing) {
             chaseTimer += delta;
             velocityVec.set(playerPosition).sub(body.getPosition());
-            if (velocityVec.len2() < 0.0001f) {
+            if (velocityVec.len2() < THRESHOLD) {
                 velocityVec.set(getRandomDirection());
             } else {
                 velocityVec.nor();
@@ -178,7 +185,7 @@ public class Enemy extends Sprite {
                 scatterDirection.setZero();
             }
         } else {
-            if (scatterDirection.len2() < 0.0001f) {
+            if (scatterDirection.len2() < THRESHOLD) {
                 scatterDirection = chooseRandomUnblockedDirection(allEnemies);
                 stateTimer = 0f;
             } else {
@@ -201,7 +208,7 @@ public class Enemy extends Sprite {
     /*
      * Chooses a random direction that is not blocked and not too close to other enemies.
      */
-    private Vector2 chooseRandomUnblockedDirection(List<Enemy> allEnemies) {
+    private Vector2 chooseRandomUnblockedDirection(final List<Enemy> allEnemies) {
         Vector2[] candidates = {
             new Vector2(0, 1),
             new Vector2(0, -1),
@@ -224,7 +231,7 @@ public class Enemy extends Sprite {
     /*
      * Checks if the direction is blocked by a static body.
      */
-    private boolean isBlockedDirection(Vector2 dir) {
+    private boolean isBlockedDirection(final Vector2 dir) {
         Vector2 start = body.getPosition();
         Vector2 end = start.cpy().add(dir.cpy().scl(CHECK_DISTANCE));
 
@@ -243,14 +250,22 @@ public class Enemy extends Sprite {
     /*
      * Checks if moving in the given direction would bring the enemy too close to others.
      */
-    private boolean isTooCloseToOtherEnemies(Vector2 dir, List<Enemy> allEnemies) {
-        if (body == null) return false;
+    private boolean isTooCloseToOtherEnemies(final Vector2 dir, final List<Enemy> allEnemies) {
+        if (body == null) {
+            return false;
+        }
+
+        final float nextPosScalar = 0.5f;
         Vector2 myPos = body.getPosition();
-        Vector2 nextPos = myPos.cpy().add(dir.cpy().scl(0.5f));
+        Vector2 nextPos = myPos.cpy().add(dir.cpy().scl(nextPosScalar));
 
         for (Enemy e : allEnemies) {
-            if (e == this) continue;
-            if (e.isPendingRespawn()) continue;
+            if (e == this) {
+                continue;
+            }
+            if (e.isPendingRespawn()) {
+                continue;
+            }
 
             Vector2 otherPos = e.getBodyPosition();
             float dist = nextPos.dst(otherPos);
@@ -270,7 +285,7 @@ public class Enemy extends Sprite {
         if (body != null) {
             return body.getPosition();
         }
-        return new Vector2(getX() + getWidth()/2, getY() + getHeight()/2);
+        return new Vector2(getX() + getWidth() / 2, getY() + getHeight() / 2);
     }
 
     /**
@@ -286,7 +301,8 @@ public class Enemy extends Sprite {
      * Returns a random normalized direction vector.
      */
     private Vector2 getRandomDirection() {
-        float angle = MathUtils.random(360f);
+        final float fullCircle = 360f;
+        float angle = MathUtils.random(fullCircle);
         return new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle)).nor();
     }
 
@@ -294,7 +310,7 @@ public class Enemy extends Sprite {
      * Updates the enemy's animation based on its velocity.
      */
     private void updateAnimation(final Vector2 velocity) {
-        if (velocity.len2() < 0.0001f) {
+        if (velocity.len2() < THRESHOLD) {
             currentFrame = walkDown.getKeyFrame(0);
             return;
         }
@@ -302,10 +318,14 @@ public class Enemy extends Sprite {
         if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
             if (velocity.x > 0) {
                 currentFrame = walkRight.getKeyFrame(stateTimer, true);
-                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                if (currentFrame.isFlipX()) {
+                    currentFrame.flip(true, false);
+                }
             } else {
                 currentFrame = walkRight.getKeyFrame(stateTimer, true);
-                if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                if (!currentFrame.isFlipX()) {
+                    currentFrame.flip(true, false);
+                }
             }
         } else {
             if (velocity.y > 0) {
@@ -313,7 +333,9 @@ public class Enemy extends Sprite {
             } else {
                 currentFrame = walkDown.getKeyFrame(stateTimer, true);
             }
-            if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+            if (currentFrame.isFlipX()) {
+                currentFrame.flip(true, false);
+            }
         }
     }
 
@@ -323,7 +345,7 @@ public class Enemy extends Sprite {
      * @param batch the Batch used for drawing
      */
     @Override
-    public void draw(Batch batch) {
+    public void draw(final Batch batch) {
         if (pendingRespawn) {
             return;
         }
@@ -348,7 +370,7 @@ public class Enemy extends Sprite {
      * @return true if the Enemy is equal to the other object, false otherwise
      */
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object) {
             return true;
         }
