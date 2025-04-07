@@ -2,12 +2,22 @@ package game;
 
 import Sprites.Player;
 import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.Manifold;
 
+import java.util.Objects;
+
+///**
+// * Handles collision events between player and enemy objects.
+// *
+// * @author Zoey Lee, Heather Kim
+// * @version 2025
+// */
 public class CollisionListener implements ContactListener {
     private final GameScreen screen;
 
-    public CollisionListener(GameScreen screen) {
+    public CollisionListener(final GameScreen screen) {
         this.screen = screen;
     }
 
@@ -21,7 +31,7 @@ public class CollisionListener implements ContactListener {
             if (!player.isInvincible()) {
                 player.hitByNPC();
                 screen.scheduleEnemyRemoval((Enemy) userDataB);
-                ((Enemy) userDataA).onPlayerCollision();
+                ((Enemy) userDataB).onPlayerCollision();
             }
         } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
             Player player = (Player) userDataB;
@@ -57,5 +67,51 @@ public class CollisionListener implements ContactListener {
 
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {
+    }
+
+    /**
+     * Determines if the CollisionListener is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the CollisionListener is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        CollisionListener collisionListener = (CollisionListener) obj;
+        return Objects.equals(this.screen, collisionListener.screen);
+    }
+
+    /**
+     * Gets the hashcode of the CollisionListener.
+     *
+     * @return the hashcode of the CollisionListener as an integer
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.screen);
+    }
+
+    /**
+     * Gets the string representation of the CollisionListener.
+     *
+     * @return the string representation of the CollisionListener
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("CollisionListener{");
+        sb.append("screen='").append(this.screen);
+        sb.append('}');
+        return sb.toString();
     }
 }
