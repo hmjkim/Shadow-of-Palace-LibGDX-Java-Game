@@ -1,6 +1,5 @@
 package game;
 
-import Sprites.Direction;
 import Sprites.FrameRegionDimensions;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
@@ -10,8 +9,14 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-
+/**
+ * Represents an enemy sprite with basic AI for movement and chasing.
+ *
+ * @author Zoey Lee, Heather Kim
+ * @version 2025
+ */
 public class Enemy extends Sprite {
     private final World world;
     private Body body;
@@ -29,7 +34,6 @@ public class Enemy extends Sprite {
     private boolean isChasing;
 
     private Vector2 scatterDirection;
-    private final GameScreen screen;
     private final Vector2 spawnPos;
 
     private boolean pendingRespawn;
@@ -39,13 +43,20 @@ public class Enemy extends Sprite {
     private Animation<TextureRegion> walkRight;
     private Animation<TextureRegion> walkDown;
     private TextureRegion currentFrame;
-    private Direction direction;
 
-    public Enemy(World world, GameScreen screen, TextureAtlas atlas,
+    /**
+     * Constructs an enemy.
+     *
+     * @param world the Box2D world for physics simulation
+     * @param atlas the TextureAtlas containing enemy regions
+     * @param spawnPos the spawn position in world units
+     * @param regionName the name of the region in the atlas to use for this enemy
+     * @param dimensions the frame dimensions for the enemy animation
+     */
+    public Enemy(final World world, final TextureAtlas atlas,
                  Vector2 spawnPos, String regionName, FrameRegionDimensions dimensions) {
         super(atlas.findRegion(regionName));
         this.world = world;
-        this.screen = screen;
         this.dimensions = dimensions;
 
         this.spawnPos = spawnPos.cpy();
@@ -55,7 +66,6 @@ public class Enemy extends Sprite {
         this.chaseTimer = 0f;
         this.isChasing = false;
         this.scatterDirection = new Vector2(0, 0);
-        this.direction = Direction.SOUTH;
 
         setSize(dimensions.getFrameWidth() / MainGame.PIXELS_PER_METER,
             dimensions.getFrameHeight() / MainGame.PIXELS_PER_METER);
@@ -66,6 +76,9 @@ public class Enemy extends Sprite {
         currentFrame = walkDown.getKeyFrame(0);
     }
 
+    /*
+     * Creates the physics body for the enemy at the given position.
+     */
     private void createBody(Vector2 pos) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -87,6 +100,9 @@ public class Enemy extends Sprite {
         shape.dispose();
     }
 
+    /*
+     * Sets up animations for the enemy using the provided texture region.
+     */
     private void setupAnimation(TextureRegion region) {
         int columns = 3;
 
@@ -115,6 +131,13 @@ public class Enemy extends Sprite {
         walkDown = new Animation<>(0.15f, framesDown, Animation.PlayMode.LOOP);
     }
 
+    /**
+     * Updates the enemy's state and movement.
+     *
+     * @param delta the time in seconds
+     * @param playerPosition the player's current position in world units
+     * @param allEnemies a list of all enemies for collision avoidance
+     */
     public void update(float delta, Vector2 playerPosition, List<Enemy> allEnemies) {
         if (pendingRespawn) {
             if (playerPosition.dst(spawnPos) >= MIN_RESPAWN_DISTANCE) {
@@ -172,9 +195,12 @@ public class Enemy extends Sprite {
         setPosition(body.getPosition().x - getWidth() / 2f,
             body.getPosition().y - getHeight() / 2f);
 
-        updateAnimation(delta, velocityVec);
+        updateAnimation(velocityVec);
     }
 
+    /*
+     * Chooses a random direction that is not blocked and not too close to other enemies.
+     */
     private Vector2 chooseRandomUnblockedDirection(List<Enemy> allEnemies) {
         Vector2[] candidates = {
             new Vector2(0, 1),
@@ -195,6 +221,9 @@ public class Enemy extends Sprite {
         return validDirections.get(MathUtils.random(validDirections.size() - 1));
     }
 
+    /*
+     * Checks if the direction is blocked by a static body.
+     */
     private boolean isBlockedDirection(Vector2 dir) {
         Vector2 start = body.getPosition();
         Vector2 end = start.cpy().add(dir.cpy().scl(CHECK_DISTANCE));
@@ -211,6 +240,9 @@ public class Enemy extends Sprite {
         return blocked[0];
     }
 
+    /*
+     * Checks if moving in the given direction would bring the enemy too close to others.
+     */
     private boolean isTooCloseToOtherEnemies(Vector2 dir, List<Enemy> allEnemies) {
         if (body == null) return false;
         Vector2 myPos = body.getPosition();
@@ -229,22 +261,39 @@ public class Enemy extends Sprite {
         return false;
     }
 
+    /**
+     * Gets the current position of the enemy's body.
+     *
+     * @return the enemy's position as a Vector2
+     */
     public Vector2 getBodyPosition() {
         if (body != null) {
             return body.getPosition();
         }
         return new Vector2(getX() + getWidth()/2, getY() + getHeight()/2);
     }
+
+    /**
+     * Indicates whether the enemy is pending respawn.
+     *
+     * @return true if pending respawn, false otherwise
+     */
     public boolean isPendingRespawn() {
         return pendingRespawn;
     }
 
+    /*
+     * Returns a random normalized direction vector.
+     */
     private Vector2 getRandomDirection() {
         float angle = MathUtils.random(360f);
         return new Vector2(MathUtils.cosDeg(angle), MathUtils.sinDeg(angle)).nor();
     }
 
-    private void updateAnimation(float delta, Vector2 velocity) {
+    /*
+     * Updates the enemy's animation based on its velocity.
+     */
+    private void updateAnimation(final Vector2 velocity) {
         if (velocity.len2() < 0.0001f) {
             currentFrame = walkDown.getKeyFrame(0);
             return;
@@ -252,27 +301,27 @@ public class Enemy extends Sprite {
 
         if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
             if (velocity.x > 0) {
-                direction = Direction.EAST;
                 currentFrame = walkRight.getKeyFrame(stateTimer, true);
                 if (currentFrame.isFlipX()) currentFrame.flip(true, false);
             } else {
-                direction = Direction.WEST;
                 currentFrame = walkRight.getKeyFrame(stateTimer, true);
                 if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
             }
         } else {
             if (velocity.y > 0) {
-                direction = Direction.NORTH;
                 currentFrame = walkUp.getKeyFrame(stateTimer, true);
-                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
             } else {
-                direction = Direction.SOUTH;
                 currentFrame = walkDown.getKeyFrame(stateTimer, true);
-                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
             }
+            if (currentFrame.isFlipX()) currentFrame.flip(true, false);
         }
     }
 
+    /**
+     * Draws the enemy sprite using the current animation frame.
+     *
+     * @param batch the Batch used for drawing
+     */
     @Override
     public void draw(Batch batch) {
         if (pendingRespawn) {
@@ -281,11 +330,94 @@ public class Enemy extends Sprite {
         batch.draw(currentFrame, getX(), getY(), getWidth(), getHeight());
     }
 
+    /**
+     * Handles collision with the player by marking the enemy for respawn.
+     */
     public void onPlayerCollision() {
         if (body != null) {
             world.destroyBody(body);
             body = null;
         }
         pendingRespawn = true;
+    }
+
+    /**
+     * Determines if the Enemy is equal to another object.
+     *
+     * @param object the object to compare
+     * @return true if the Enemy is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        Enemy enemy = (Enemy) object;
+        return Float.compare(stateTimer, enemy.stateTimer) == 0
+            && Float.compare(chaseTimer, enemy.chaseTimer) == 0
+            && isChasing == enemy.isChasing
+            && isPendingRespawn() == enemy.isPendingRespawn()
+            && Objects.equals(world, enemy.world)
+            && Objects.equals(body, enemy.body)
+            && Objects.equals(scatterDirection, enemy.scatterDirection)
+            && Objects.equals(spawnPos, enemy.spawnPos)
+            && Objects.equals(dimensions, enemy.dimensions)
+            && Objects.equals(walkUp, enemy.walkUp)
+            && Objects.equals(walkRight, enemy.walkRight)
+            && Objects.equals(walkDown, enemy.walkDown)
+            && Objects.equals(currentFrame, enemy.currentFrame);
+    }
+
+    /**
+     * Gets the hashcode of the Enemy.
+     *
+     * @return the hashcode of the Enemy as an integer
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = Objects.hashCode(world);
+        result = prime * result + Objects.hashCode(body);
+        result = prime * result + Float.hashCode(stateTimer);
+        result = prime * result + Float.hashCode(chaseTimer);
+        result = prime * result + Boolean.hashCode(isChasing);
+        result = prime * result + Objects.hashCode(scatterDirection);
+        result = prime * result + Objects.hashCode(spawnPos);
+        result = prime * result + Boolean.hashCode(isPendingRespawn());
+        result = prime * result + Objects.hashCode(dimensions);
+        result = prime * result + Objects.hashCode(walkUp);
+        result = prime * result + Objects.hashCode(walkRight);
+        result = prime * result + Objects.hashCode(walkDown);
+        result = prime * result + Objects.hashCode(currentFrame);
+        result = prime * result + super.hashCode();
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the Enemy.
+     *
+     * @return the string representation of the Enemy
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Enemy{");
+        sb.append("world=").append(world);
+        sb.append(", body=").append(body);
+        sb.append(", stateTimer=").append(stateTimer);
+        sb.append(", chaseTimer=").append(chaseTimer);
+        sb.append(", isChasing=").append(isChasing);
+        sb.append(", scatterDirection=").append(scatterDirection);
+        sb.append(", spawnPos=").append(spawnPos);
+        sb.append(", pendingRespawn=").append(pendingRespawn);
+        sb.append(", dimensions=").append(dimensions);
+        sb.append(", walkUp=").append(walkUp);
+        sb.append(", walkRight=").append(walkRight);
+        sb.append(", walkDown=").append(walkDown);
+        sb.append(", currentFrame=").append(currentFrame);
+        sb.append('}');
+        return sb.toString();
     }
 }
