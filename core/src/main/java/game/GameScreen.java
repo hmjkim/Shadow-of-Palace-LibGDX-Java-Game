@@ -20,7 +20,6 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -422,7 +421,7 @@ public class GameScreen implements Screen {
         // Remove expired messages
         messageQueue.removeIf(message -> message.update(delta));
 
-        world.step(1/60f, 6, 2);
+        world.step(1 / 60f, 6, 2);
         if (!enemyRemovalQueue.isEmpty()) {
             for (Enemy enemy : enemyRemovalQueue) {
                 enemy.onPlayerCollision();
@@ -444,7 +443,7 @@ public class GameScreen implements Screen {
         }
 
         for (Enemy npc : npcList) {
-            npc.update(delta, playerPos);
+            npc.update(delta, playerPos, npcList);
         }
 
         for (RoyalConsort consort : royalConsortList) {
@@ -783,11 +782,10 @@ public class GameScreen implements Screen {
         font.setColor(1, 1, 1, 1); // white and opaque
         actionBoxFont = FontManager.generateFont(20, Color.valueOf("c45800"));
         messageFont = FontManager.generateFont(30, Color.WHITE);
-
-
     }
 
-    @Override public void hide() {
+    @Override
+    public void hide() {
     }
 
     @Override

@@ -1,5 +1,6 @@
 package game;
 
+import Sprites.Player;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.*;
 
@@ -16,16 +17,18 @@ public class CollisionListener implements ContactListener {
         Object userDataB = contact.getFixtureB().getUserData();
 
         if (userDataA instanceof Sprites.Player && userDataB instanceof Enemy) {
-            Sprites.Player player = (Sprites.Player) userDataA;
+            Player player = (Player) userDataA;
             if (!player.isInvincible()) {
                 player.hitByNPC();
                 screen.scheduleEnemyRemoval((Enemy) userDataB);
+                ((Enemy) userDataA).onPlayerCollision();
             }
         } else if (userDataB instanceof Sprites.Player && userDataA instanceof Enemy) {
-            Sprites.Player player = (Sprites.Player) userDataB;
+            Player player = (Player) userDataB;
             if (!player.isInvincible()) {
                 player.hitByNPC();
                 screen.scheduleEnemyRemoval((Enemy) userDataA);
+                ((Enemy) userDataA).onPlayerCollision();
             }
         }
     }
