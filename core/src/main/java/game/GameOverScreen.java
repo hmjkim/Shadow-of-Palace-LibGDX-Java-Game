@@ -1,5 +1,6 @@
 package game;
 
+import Helper.FontManager;
 import Sprites.PlayerHealth;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -41,8 +42,8 @@ public class GameOverScreen implements Screen {
         stage.addActor(table);
 
         // Create a custom LabelStyle for the title
-        BitmapFont font = new BitmapFont();
-        LabelStyle titleStyle = new LabelStyle(font, Color.RED);
+        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        titleStyle.font = FontManager.generateFont(64, Color.RED);
         Label titleLabel = new Label("Game Over", titleStyle);
         titleLabel.setFontScale(2f);
 
@@ -69,9 +70,9 @@ public class GameOverScreen implements Screen {
         // Arrange UI elements in the table
         table.add(titleLabel).pad(20).colspan(2);
         table.row();
-        table.add(restartButton).pad(10).width(150);
+        table.add(restartButton).pad(10).width(150).height(50);
         table.row();
-        table.add(exitButton).pad(10).width(150);
+        table.add(exitButton).pad(10).width(150).height(50);
     }
 
     @Override
