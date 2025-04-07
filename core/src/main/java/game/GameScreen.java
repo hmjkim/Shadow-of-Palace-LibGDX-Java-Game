@@ -52,8 +52,8 @@ public class GameScreen implements Screen {
     private final MainGame game;
     private BitmapFont font;
 
-    private TextureAtlas atlas;
-    private TextureAtlas enemyAtlas;
+    private final TextureAtlas atlas;
+    private final TextureAtlas enemyAtlas;
 
     // Player object that contains its own Box2D dynamic body and image.
     private final Player player;
@@ -63,9 +63,7 @@ public class GameScreen implements Screen {
     // Box2D world and debug renderer for physics simulation.
     private final World world;
     private final Box2DDebugRenderer debugRenderer;
-    private GameScreen screen;
 
-    private TimeManager timeManager;
     private final ShapeRenderer shapeRenderer;
 
     private int stage;
@@ -87,8 +85,6 @@ public class GameScreen implements Screen {
     private final List<SystemMessage> messageQueue;
     private BitmapFont messageFont;
 
-    // Ingredients
-    private List<Vector2> walkablePositions;
     private final IngredientManager ingredientManager;
 
     //Target Royal Consort
@@ -98,8 +94,8 @@ public class GameScreen implements Screen {
 
     // Pause
     private boolean isPaused;
-    private PauseMenu pauseMenu;
-    private Stage mainStage;
+    private final PauseMenu pauseMenu;
+    private final Stage mainStage;
 
     // --- Tiled Map Setup ---
     // Load the Tiled map from the assets folder (ensure "map.tmx" exists).
@@ -175,7 +171,6 @@ public class GameScreen implements Screen {
         // Create the player, passing the Box2D world so the player can create its dynamic body.
         player = new Player(world, this);
 
-        this.timeManager = TimeManager.getInstance();
         this.shapeRenderer = new ShapeRenderer();
 
         this.stage = 1;
@@ -184,7 +179,7 @@ public class GameScreen implements Screen {
         npcList = new ArrayList<>();
         consortRemovalQueue = new ArrayList<>();
         enemyRemovalQueue = new ArrayList<>();
-        this.enemyCount = 3;
+        this.enemyCount = 11;
         spawnEnemy();
         spawnRoyalConsorts();
         spawnPlayerBasedOnCurrentRank();
@@ -195,7 +190,8 @@ public class GameScreen implements Screen {
         messageQueue = new ArrayList<>();
 
         // Ingredients
-        walkablePositions = getWalkablePositions();
+        // Ingredients
+        List<Vector2> walkablePositions = getWalkablePositions();
         ingredientManager = new IngredientManager(walkablePositions);
 
         this.currentTargetIndex = 0;
@@ -1008,6 +1004,146 @@ public class GameScreen implements Screen {
         for (Texture tex : targetIcons.values()) {
             tex.dispose();
         }
-//        player.dispose();
+    }
+
+    /**
+     * Determines if the GameScreen is equal to another object.
+     *
+     * @param obj the object to compare
+     * @return true if the GameScreen is equal to the other object, false otherwise
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj.getClass() == this.getClass())) {
+            return false;
+        }
+
+        GameScreen gameScreen = (GameScreen) obj;
+        return Objects.equals(this.map, gameScreen.map)
+            && Objects.equals(this.mapRenderer, gameScreen.mapRenderer)
+            && Objects.equals(this.camera, gameScreen.camera)
+            && Objects.equals(this.viewport, gameScreen.viewport)
+            && Objects.equals(this.game, gameScreen.game)
+            && Objects.equals(this.font, gameScreen.font)
+            && Objects.equals(this.atlas, gameScreen.atlas)
+            && Objects.equals(this.stage, gameScreen.stage)
+            && Objects.equals(this.enemyAtlas, gameScreen.enemyAtlas)
+            && Objects.equals(this.player, gameScreen.player)
+            && Objects.equals(this.uiCamera, gameScreen.uiCamera)
+            && Objects.equals(this.world, gameScreen.world)
+            && Objects.equals(this.debugRenderer, gameScreen.debugRenderer)
+            && Objects.equals(this.shapeRenderer, gameScreen.shapeRenderer)
+            && Objects.equals(this.npcList, gameScreen.npcList)
+            && Objects.equals(this.enemyRemovalQueue, gameScreen.enemyRemovalQueue)
+            && Objects.equals(this.enemyCount, gameScreen.enemyCount)
+            && Objects.equals(this.royalConsortList, gameScreen.royalConsortList)
+            && Objects.equals(this.consortRemovalQueue, gameScreen.consortRemovalQueue)
+            && Objects.equals(this.kitchen, gameScreen.kitchen)
+            && Objects.equals(this.kitchenZone, gameScreen.kitchenZone)
+            && Objects.equals(this.layout, gameScreen.layout)
+            && Objects.equals(this.actionBoxFont, gameScreen.actionBoxFont)
+            && Objects.equals(this.messageQueue, gameScreen.messageQueue)
+            && Objects.equals(this.messageFont, gameScreen.messageFont)
+            && Objects.equals(this.ingredientManager, gameScreen.ingredientManager)
+            && Objects.equals(this.killOrder, gameScreen.killOrder)
+            && Objects.equals(this.currentTargetIndex, gameScreen.currentTargetIndex)
+            && Objects.equals(this.targetIcons, gameScreen.targetIcons)
+            && Objects.equals(this.isPaused, gameScreen.isPaused)
+            && Objects.equals(this.pauseMenu, gameScreen.pauseMenu)
+            && Objects.equals(this.mainStage, gameScreen.mainStage);
+    }
+
+    /**
+     * Gets the hashcode of the GameScreen.
+     *
+     * @return the hashcode of the GameScreen as an integer
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.map);
+        final int prime = 21;
+        result = prime * result + Objects.hashCode(this.mapRenderer);
+        result = prime * result + Objects.hashCode(this.camera);
+        result = prime * result + Objects.hashCode(this.viewport);
+        result = prime * result + Objects.hashCode(this.game);
+        result = prime * result + Objects.hashCode(this.font);
+        result = prime * result + Objects.hashCode(this.atlas);
+        result = prime * result + Objects.hashCode(this.stage);
+        result = prime * result + Objects.hashCode(this.enemyAtlas);
+        result = prime * result + Objects.hashCode(this.player);
+        result = prime * result + Objects.hashCode(this.uiCamera);
+        result = prime * result + Objects.hashCode(this.world);
+        result = prime * result + Objects.hashCode(this.debugRenderer);
+        result = prime * result + Objects.hashCode(this.shapeRenderer);
+        result = prime * result + Objects.hashCode(this.npcList);
+        result = prime * result + Objects.hashCode(this.enemyRemovalQueue);
+        result = prime * result + Objects.hashCode(this.enemyCount);
+        result = prime * result + Objects.hashCode(this.royalConsortList);
+        result = prime * result + Objects.hashCode(this.consortRemovalQueue);
+        result = prime * result + Objects.hashCode(this.kitchen);
+        result = prime * result + Objects.hashCode(this.kitchenZone);
+        result = prime * result + Objects.hashCode(this.layout);
+        result = prime * result + Objects.hashCode(this.actionBoxFont);
+        result = prime * result + Objects.hashCode(this.messageQueue);
+        result = prime * result + Objects.hashCode(this.messageFont);
+        result = prime * result + Objects.hashCode(this.ingredientManager);
+        result = prime * result + Objects.hashCode(this.killOrder);
+        result = prime * result + Objects.hashCode(this.currentTargetIndex);
+        result = prime * result + Objects.hashCode(this.targetIcons);
+        result = prime * result + Objects.hashCode(this.isPaused);
+        result = prime * result + Objects.hashCode(this.pauseMenu);
+        result = prime * result + Objects.hashCode(this.mainStage);
+        return result;
+    }
+
+    /**
+     * Gets the string representation of the GameScreen.
+     *
+     * @return the string representation of the GameScreen
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb;
+        sb = new StringBuilder("GameScreen {");
+        sb.append("map='").append(this.map).append('\'');
+        sb.append("mapRenderer='").append(this.mapRenderer).append('\'');
+        sb.append("camera='").append(this.camera).append('\'');
+        sb.append("viewport='").append(this.viewport).append('\'');
+        sb.append("game='").append(this.game).append('\'');
+        sb.append(", font='").append(font).append('\'');
+        sb.append(", atlas='").append(atlas).append('\'');
+        sb.append(", stage='").append(stage).append('\'');
+        sb.append(", enemyAtlas='").append(enemyAtlas).append('\'');
+        sb.append(", player='").append(player).append('\'');
+        sb.append(", uiCamera='").append(uiCamera).append('\'');
+        sb.append(", world='").append(world).append('\'');
+        sb.append(", debugRenderer='").append(debugRenderer).append('\'');
+        sb.append(", shapeRenderer='").append(shapeRenderer).append('\'');
+        sb.append(", npcList='").append(npcList).append('\'');
+        sb.append(", enemyRemovalQueue='").append(enemyRemovalQueue).append('\'');
+        sb.append(", enemyCount='").append(enemyCount).append('\'');
+        sb.append(", royalConsortList='").append(royalConsortList).append('\'');
+        sb.append(", consortRemovalQueue='").append(consortRemovalQueue).append('\'');
+        sb.append(", kitchen='").append(kitchen).append('\'');
+        sb.append(", kitchenZone='").append(kitchenZone).append('\'');
+        sb.append(", layout='").append(layout).append('\'');
+        sb.append(", actionBoxFont='").append(actionBoxFont).append('\'');
+        sb.append(", messageQueue='").append(messageQueue).append('\'');
+        sb.append(", messageFont='").append(messageFont).append('\'');
+        sb.append(", ingredientManager='").append(ingredientManager).append('\'');
+        sb.append(", killOrder='").append(killOrder).append('\'');
+        sb.append(", currentTargetIndex='").append(currentTargetIndex).append('\'');
+        sb.append(", targetIcons='").append(targetIcons).append('\'');
+        sb.append(", isPaused='").append(isPaused).append('\'');
+        sb.append(", pauseMenu='").append(pauseMenu).append('\'');
+        sb.append(", mainStage='").append(mainStage);
+        sb.append('}');
+        return sb.toString();
     }
 }

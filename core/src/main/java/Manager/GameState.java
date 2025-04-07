@@ -327,5 +327,3 @@ public class GameState {
         return sb.toString();
     }
 }
-
-
