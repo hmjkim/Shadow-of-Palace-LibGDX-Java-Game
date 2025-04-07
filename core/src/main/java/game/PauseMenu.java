@@ -1,6 +1,9 @@
 package game;
 
+import Helper.FontManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -10,6 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+
 
 public class PauseMenu {
     private Stage stage;
@@ -29,13 +37,28 @@ public class PauseMenu {
         stage = new Stage(new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
+        // Create a dark transparent overlay
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0.6f); // black with 60% opacity
+        pixmap.fill();
+        Texture overlayTexture = new Texture(pixmap);
+        pixmap.dispose(); // done with pixmap
+
+        Image overlay = new Image(new TextureRegionDrawable(overlayTexture));
+        overlay.setFillParent(true); // cover the whole screen
+
         table = new Table();
         table.setFillParent(true);
         table.center();
 
         // Add a title label for the pause menu
-        Label titleLabel = new Label("Paused", skin);
-        titleLabel.setFontScale(2);
+        BitmapFont titleFont = FontManager.generateFont(48, Color.WHITE); // size & color
+
+        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        titleStyle.font = titleFont;
+
+        Label titleLabel = new Label("Paused", titleStyle);
+
         table.add(titleLabel).padBottom(20).colspan(2);
         table.row();
 
@@ -86,6 +109,7 @@ public class PauseMenu {
         table.row();
         table.add(exitButton).pad(10).width(150).height(50);
 
+        stage.addActor(overlay);
         stage.addActor(table);
     }
 

@@ -67,14 +67,14 @@ public class MainMenuScreen implements Screen {
         });
 
         // Add buttons to the table with some padding
-        table.add(startButton).pad(10).width(150);
+        table.add(startButton).pad(10).width(150).height(50);
         table.row();
 
         GameState loadedState = GameSaveManager.loadGame();
         if (loadedState != null) {
             // Create a Load button
             TextButton loadButton = new TextButton("Load", skin);
-            table.add(loadButton).pad(10).width(150);
+            table.add(loadButton).pad(10).width(150).height(50);
             table.row();
 
             loadButton.addListener(new ClickListener() {
@@ -84,7 +84,7 @@ public class MainMenuScreen implements Screen {
                 }
             });
         }
-        table.add(exitButton).pad(10).width(150);
+        table.add(exitButton).pad(10).width(150).height(50);
     }
 
     @Override
