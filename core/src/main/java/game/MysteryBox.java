@@ -3,7 +3,6 @@ package game;
 import Sprites.PlayerInventory;
 import com.badlogic.gdx.math.MathUtils;
 
-import java.util.Objects;
 
 /**
  * Crafts outcomes based on a recipe of required ingredients.
@@ -11,7 +10,7 @@ import java.util.Objects;
  *  @author Zoey Lee, Heather Kim
  *  @version 2025
  */
-public class MysteryBox {
+public final class MysteryBox {
     private static MysteryBox instance;
     private int waterRequired;
     private int leafRequired;
@@ -33,7 +32,10 @@ public class MysteryBox {
      */
     public static MysteryBox getInstance() {
         if (instance == null) {
-            instance = new MysteryBox(5, 5, 5);
+            final int waterRequired = 5;
+            final int leafRequired = 5;
+            final int rockRequired = 5;
+            instance = new MysteryBox(waterRequired, leafRequired, rockRequired);
         }
         return instance;
     }
@@ -51,11 +53,14 @@ public class MysteryBox {
         inventory.removeIngredients(this.waterRequired, this.leafRequired, this.rockRequired);
 
         float randomValue = MathUtils.random();
-        if (randomValue < 0.35f) {
+        final float failureThreshold = 0.35f;
+        final float poisonThreshold = 0.6f;
+        final float invincibilityThreshold = 0.85f;
+        if (randomValue < failureThreshold) {
             return MysteryBoxOutcome.FAILURE; //35%
-        } else if (randomValue < 0.60f) {
+        } else if (randomValue < poisonThreshold) {
             return MysteryBoxOutcome.POISON; //25%
-        } else if (randomValue < 0.85f) {
+        } else if (randomValue < invincibilityThreshold) {
             return MysteryBoxOutcome.INVINCIBILITY; //25%
         } else {
             return MysteryBoxOutcome.HEART_RECOVERY; //15%
@@ -120,7 +125,7 @@ public class MysteryBox {
      * @return true if the MysteryBox is equal to the other object, false otherwise
      */
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object) {
             return true;
         }
