@@ -38,4 +38,9 @@ public class TimeManager {
     public boolean getIsDayTime() {
         return this.isDayTime;
     }
+    public void reset() {
+        isDayTime = true; // or whatever your default is
+        timeElapsed = 0f;
+    }
+
 }
