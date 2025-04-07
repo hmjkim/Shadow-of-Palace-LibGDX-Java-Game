@@ -88,6 +88,6 @@ public class Ingredient extends Sprite {
         sb.append("regionHeightX='").append(this.getRegionX()).append('\'');
         sb.append("ingredientType='").append(this.getType());
         sb.append('}');
-        return sb.toString();
+        return super.toString() + sb;
     }
 }
