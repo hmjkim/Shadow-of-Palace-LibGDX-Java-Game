@@ -5,12 +5,10 @@ Shadow of Palace is a **COMP 2522** term project developed with Java and LibGDX 
 ## Authors
 
 **Min Ji Kim (Heather)**
-- StudentID: A01063140
 - GitHub name: hmjkim
 
 
 **Min Seo Lee (Zoey)**
-- StudentID: A01405148
 - GitHub name: ZoeyLee66
 
 ## Setup Requirements
